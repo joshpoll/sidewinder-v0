@@ -1,5 +1,6 @@
 /* TODO: need to improve id representation */
 /* TODO: need to add rendering and constraint information */
+/* TODO: how to add transition information? */
 
 type id = string;
 type path = list(id);
