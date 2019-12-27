@@ -1,6 +1,6 @@
 # Sidewinder
 
-Sidewinder is the successor to Theia. Its main objectives is to allow users to express a wide range
+Sidewinder is the successor to Theia. Its main objective is to allow users to express a wide range
 of state+transition abstractions and transformations. To accomplish this, Sidewinder represents
 program state using *hierarchical graphs*. We build off existing literature in this space, but find
 that no existing representation is entirely suitable for our needs (maybe). Using hierarchical
