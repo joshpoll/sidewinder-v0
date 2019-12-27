@@ -12,7 +12,7 @@ let makeEdges = l =>
 
 let sequence = (id, nodes) => {
   id,
-  element: Graph(nodes, makeEdges(List.map(e => e.id, nodes))),
+  element: Graph(nodes, makeEdges(List.map(e => [e.id], nodes))),
 };
 
 let rec interleave = (xs, ys) =>
