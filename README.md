@@ -32,6 +32,23 @@ Key Ideas(?):
 - There are powerful, simple, language-agnostic transformations and these transformations rely on
   both state and transition information. We only need a few to replicate existing diagrams when
   starting with ground-truth semantics.
+- Comparison to T.W. Pratt's H-Graph
+  - "Within an H-graph, a particular directed graph may only exist as the value of some node, and
+    the arcs and initial node designation are "local" to that graph. The nodes, however, are not
+    local to the graph; a node is inherently "global" in that it may appear in many different graphs
+    within an H-graph, and its value is independent of the particular graph within which it is
+    found. Global nodes combined with local graphs in H-graphs are important for natural modeling of
+    many programming language structures." Pratt 78
+  - Pratt justifies this choice by noting that data (atoms) may be shared by multiple data
+    structures (nested graphs) and thus atoms must be shared.
+  - Sidewinder takes the opposite approach: nodes are local but edges may be nonlocal. We believe
+    this more accurately models existing diagrams. Typically, people visualize shared data using
+    global pointers to a single region (e.g. heap) rather than a global node in multiple region.
+    Moreover, Pratt's Figure 1, which visualizes the Lisp expression `(A (B (C A)) D)`, can be
+    replicated in Sidewinder, because the debugger and language semantics are resonsible for
+    remembering that the two `A`'s are the same. Sidewinder can be oblivious to this and work just
+    fine without a global pointer to a shared data structure.
+  - Pratt's technique works well when defining semantics, which we are not concerned with.
 
 ## ReasonReact Template & Examples
 

@@ -8,11 +8,17 @@ let atom = (id, e) => {id, element: Atom(e)};
 
 let makeEdges = l =>
   List.combine(List.rev(l) |> List.tl |> List.rev, List.tl(l))
-  |> List.map(((source, target)) => {source, target});
+  |> List.map(((source, target)) => {
+                                        source,
+                                        target: {
+                                          ancestorRoot: 0,
+                                          absPath: [target],
+                                        },
+                                      });
 
 let sequence = (id, nodes) => {
   id,
-  element: Graph(nodes, makeEdges(List.map(e => [e.id], nodes))),
+  element: Graph(nodes, makeEdges(List.map(e => e.id, nodes))),
 };
 
 let rec interleave = (xs, ys) =>
