@@ -1,10 +1,11 @@
 /* Lowering Theia into Sidewinder */
 /* TODO: should probably generate new ids for children, but ids aren't fully baked anyway */
 /* TODO: some of this conversion is probably wrong or incomplete */
+/* TODO: more of these should probably use Nest */
 
 open SidewinderKernel;
 
-let atom = (id, e) => {id, element: Atom(e)};
+let atom = (id, e) => {id, element: Nest([], _ => e)};
 
 let makeEdges = l =>
   List.combine(List.rev(l) |> List.tl |> List.rev, List.tl(l))

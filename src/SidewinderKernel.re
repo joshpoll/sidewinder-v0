@@ -1,8 +1,6 @@
 /* TODO: need to improve id representation */
 /* TODO: need to add rendering and constraint information */
 /* TODO: how to add transition information? */
-/* TODO: explain differences between this model and Pratt's H-Graph, which is probably the closest
-   existing representation */
 
 type id = string;
 type absPath = list(id);
@@ -20,7 +18,7 @@ type edge = {
 
 type element =
   | Graph(list(node), list(edge))
-  | Atom(React.element)
+  | Nest(list(node), list(React.element) => React.element)
 
 and node = {
   id,
