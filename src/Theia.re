@@ -5,21 +5,15 @@
 
 open SidewinderKernel;
 
-let atom = (id, e) => {id, element: Nest([], _ => e)};
+let atom = (id, e) => {id, element: Nest({children: [], render: _ => e})};
 
 let makeEdges = l =>
   List.combine(List.rev(l) |> List.tl |> List.rev, List.tl(l))
-  |> List.map(((source, target)) => {
-                                        source,
-                                        target: {
-                                          ancestorRoot: 0,
-                                          absPath: [target],
-                                        },
-                                      });
+  |> List.map(((source, target)) => {source, target, edgeRender: <> </>});
 
 let sequence = (id, nodes) => {
   id,
-  element: Graph(nodes, makeEdges(List.map(e => e.id, nodes))),
+  element: Graph(nodes, makeEdges(List.map(e => e.id, nodes)), {json||json}),
 };
 
 let rec interleave = (xs, ys) =>
