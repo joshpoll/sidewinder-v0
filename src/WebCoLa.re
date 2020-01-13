@@ -1,15 +1,17 @@
 /* wrapper for WebCoLa */
 
 type colaLayout;
+type colaConstraint;
+
+/* TODO: this is incorrect */
 type node = {
   x: float,
   y: float,
-  width: option(float),
-  height: option(float),
 };
 
+/* TODO: this type is incorrect. random things add random stuff. */
 type link('nt) = {
-  length: float,
+  length: option(float),
   source: 'nt,
   target: 'nt,
 };
@@ -19,10 +21,13 @@ type link('nt) = {
 type node_or_num =
   | NN('a): node_or_num;
 
-[@bs.new] [@bs.module "webcola"] external colaLayout: colaLayout = "Layout";
+type webColaLink = link(node_or_num);
+
+[@bs.new] [@bs.module "webcola"] external colaLayout: unit => colaLayout = "Layout";
 [@bs.send] external nodes: (colaLayout, array(node)) => colaLayout = "nodes";
-[@bs.send] external links: (colaLayout, array(link(node_or_num))) => colaLayout = "links";
-[@bs.send] external constraints: (colaLayout, array('a)) => colaLayout = "constraints";
+[@bs.send] external links: (colaLayout, array(webColaLink)) => colaLayout = "links";
+[@bs.send]
+external constraints: (colaLayout, array(colaConstraint)) => colaLayout = "constraints";
 [@bs.send] external avoidOverlaps: (colaLayout, bool) => colaLayout = "avoidOverlaps";
 [@bs.send]
 external start:
