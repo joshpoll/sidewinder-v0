@@ -142,12 +142,12 @@ Js.log(getLinks(cola));
 
 /* TODO: use renderSW in Visualize on a small example */
 
-ReactDOMRe.render(
-  <Visualize nodes={getNodes(cola)} links={getLinks(cola)} />,
-  makeContainer("Sidewinder"),
-);
+/* ReactDOMRe.render(
+     <Visualize nodes={getNodes(cola)} links={getLinks(cola)} />,
+     makeContainer("Sidewinder"),
+   ); */
 
 /* Js.log(result.nodes);
    Js.log(result.links); */
 
-ReactDOMRe.render(<Visualize2 node=SidewinderExamples.g />, makeContainer("Sidewinder2"));
+/* ReactDOMRe.render(<Visualize2 node=SidewinderExamples.g />, makeContainer("Sidewinder2")); */

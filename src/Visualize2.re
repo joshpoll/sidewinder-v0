@@ -48,55 +48,48 @@ let layoutGraph = (graph, spec) => {
 };
 
 /* TODO: maybe should add to the dom at a specified location and return its bounding box? */
-let rec renderSW = (SidewinderKernel.{nodes, edges, constraints, nodeRender}) => {
+let rec renderSW =
+        (SidewinderKernel.{nodes, links, constraints, render}): SidewinderKernel.renderedNode => {
+  /* 1. render nodes (to get bboxes for layout) */
   let renderedNodes = List.map(renderSW, nodes);
-  let layoutNodes =
-    List.map(_ => SetCoLa.{width: 10., height: 10., custom: Js.Obj.empty()}, renderedNodes);
+  /* 2. layout graph */
+  /* let layoutNodes =
+     List.map(_ => SetCoLa.{width: 10., height: 10., custom: Js.Obj.empty()}, renderedNodes); */
   let layoutEdges =
     List.map(
       (SidewinderKernel.{source, target, edgeRender: _}) =>
         WebCoLa.{length: None, source: NN(source), target: NN(target)},
-      edges,
+      links,
     );
   let graphLayout =
     layoutGraph(
-      SetCoLa.{nodes: layoutNodes |> Array.of_list, links: layoutEdges |> Array.of_list},
+      SetCoLa.{nodes: renderedNodes |> Array.of_list, links: layoutEdges |> Array.of_list},
       constraints,
     );
+  /* 3. compute node's bbox (TODO!) */
+  /* may want to move bbox rendering into the render function to give the caller the choice */
+  /* can push implementation to rectangle module */
+  /* 4. render self */
   let layoutNodesNoTemp =
     List.filter((n: WebCoLa.node('a)) => !n.temp, graphLayout.colaNodes |> Array.to_list);
-  let combinedNodes = List.combine(renderedNodes, layoutNodesNoTemp);
-  let renderedNodes =
-    List.map(
-      ((rn, cn)) =>
-        WebCoLa.{
-          x: cn.x,
-          y: cn.y,
-          temp: cn.temp,
-          width: cn.width,
-          height: cn.height,
-          custom: {
-            "rendered": rn,
-          },
-        },
-      combinedNodes,
-    );
-  nodeRender({renderedNodes, renderedEdges: edges});
-  /* TODO: this seem really really hard to do in React
-      https://stackoverflow.com/questions/49058890/how-to-get-a-react-components-size-height-width-before-render/49058984
-      can't measure dom unless rendered, so need to add to dom, measure, then remove
-     */
+  /* TODO: compute width and height! cf. https://github.com/tgdwyer/WebCola/blob/34433da152b590ba212fc373af608b68110aa6d1/WebCola/src/rectangle.ts */
+  render({
+           bbox: {
+             x1: 0.,
+             x2: 0.,
+             y1: 0.,
+             y2: 0.,
+           },
+           nodes: layoutNodesNoTemp,
+         }, links);
   /* create temporary bbox-testing container */
-  /* let bbox = Index.document##createElement("svg");
-     bbox##className #= "bbox";
-     ReactDOMRe.render(rendered, bbox);
-     ReactDOMRe.findDOMNode();
-     ReactDOMRe.unmountComponentAtNode(bbox); */
 };
 
 open WebCoLa;
 
 [@react.component]
 let make = (~node) => {
-  <div style={ReactDOMRe.Style.make(~position="relative", ())}> {renderSW(node)} </div>;
+  <div style={ReactDOMRe.Style.make(~position="relative", ())}>
+    {renderSW(node).custom##rendered}
+  </div>;
 };

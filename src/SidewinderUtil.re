@@ -1,6 +1,19 @@
 open SidewinderKernel;
 
-let atom = e => {nodes: [], edges: [], constraints: [||], nodeRender: _ => e};
+/* TODO: nesting and continuations? */
+
+let atom = (e, width, height) => {
+  nodes: [],
+  links: [],
+  constraints: [||],
+  render: (_, _) => {
+    width,
+    height,
+    custom: {
+      "rendered": e,
+    },
+  },
+};
 
 /* https://2ality.com/2018/01/lists-arrays-reasonml.html */
 /**
@@ -86,49 +99,57 @@ let directionConstraints = direction =>
     }
   );
 
-let defaultRender = ({renderedNodes, renderedEdges}) => {
+let defaultRender = ({bbox, nodes}, edges): renderedNode => {
   let renderEdge = ({source, target, edgeRender}) => {
-    let sourceNode = List.nth(renderedNodes, source);
-    let targetNode = List.nth(renderedNodes, target);
+    let sourceNode = List.nth(nodes, source);
+    let targetNode = List.nth(nodes, target);
     edgeRender({x1: sourceNode.x, y1: sourceNode.y, x2: targetNode.x, y2: targetNode.y});
   };
-  <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
-    <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
-      {List.map(
-         (n: WebCoLa.node({. rendered: React.element})) =>
-           <div
-             style={ReactDOMRe.Style.make(
-               ~display="inline-block",
-               ~position="absolute",
-               ~top=Js.Float.toString(n.x) ++ "px",
-               ~left=Js.Float.toString(n.y) ++ "px",
-               (),
-             )}>
-             {n.custom##rendered}
-           </div>,
-         renderedNodes,
-       )
-       |> Array.of_list
-       |> React.array}
-    </div>
-    <div style={ReactDOMRe.Style.make(~display="inline-block", ())}>
-      {List.map(renderEdge, renderedEdges) |> Array.of_list |> React.array}
-    </div>
-  </div>;
+  {
+    width: bbox.x2 -. bbox.x1,
+    height: bbox.y2 -. bbox.y1,
+    custom: {
+      "rendered":
+        <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
+          <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
+            {List.map(
+               (n: renderedWebCoLaNode) =>
+                 <div
+                   style={ReactDOMRe.Style.make(
+                     ~display="inline-block",
+                     ~position="absolute",
+                     ~top=Js.Float.toString(n.x) ++ "px",
+                     ~left=Js.Float.toString(n.y) ++ "px",
+                     (),
+                   )}>
+                   {n.custom##rendered}
+                 </div>,
+               nodes,
+             )
+             |> Array.of_list
+             |> React.array}
+          </div>
+          <div style={ReactDOMRe.Style.make(~display="inline-block", ())}>
+            {List.map(renderEdge, edges) |> Array.of_list |> React.array}
+          </div>
+        </div>,
+    },
+  };
 };
 
 let sequence = (nodes, edgeRender, direction) => {
   nodes,
-  edges: makeEdges(List.length(nodes) |> range(0), edgeRender),
+  links: makeEdges(List.length(nodes) |> range(0), edgeRender),
   constraints: directionConstraints(direction),
-  nodeRender: defaultRender,
+  render: defaultRender,
 };
 
 /* NOTE! Doesn't provide any edge connections. */
 /* TODO: Could allow edges, just don't render them. */
+/* NOTE! Doesn't rely on bounding box? Because computes its own? */
 let nest = (nodes, nestRender) => {
   nodes,
-  edges: [],
+  links: [],
   constraints: [||],
-  nodeRender: ({renderedNodes, renderedEdges: _}) => nestRender(renderedNodes),
+  render: ({bbox: _, nodes}, _) => nestRender(nodes),
 };

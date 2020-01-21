@@ -50,20 +50,20 @@ type renderedLocalEdge = {
   rendered: React.element,
 };
 
-type nest = {
-  children: list(node),
-  render: list(React.element) => React.element,
-}
+/* type nest = {
+     children: list(node),
+     render: list(React.element) => React.element,
+   }
 
-and element =
-  | Graph(list(node), list(localEdge), setCoLaSpec)
-  | Nest(nest)
-  | Ptr(React.element, relPath, edgeRender)
+   and element =
+     | Graph(list(node), list(localEdge), setCoLaSpec)
+     | Nest(nest)
+     | Ptr(React.element, relPath, edgeRender)
 
-and node = {
-  id,
-  element,
-};
+   and node = {
+     id,
+     element,
+   }; */
 
 /* json literal syntax */
 /* {json|
@@ -72,20 +72,27 @@ and node = {
 
    |json} */
 
+type renderedNode = SetCoLa.node({. rendered: React.element});
+type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element});
+
 type renderedGraphElements = {
-  renderedNodes: list(ReasonReactExamples.WebCoLa.node({. rendered: React.element})),
-  renderedEdges: list(localEdge) /* TODO: change? */
+  renderedNodes: list(renderedNode),
+  renderedEdges: list(localEdge) /* TODO: change? */,
+  /* width and height of the graph. computed by unioning the node bounding boxes like webcola does */
+  width: float,
+  height: float,
 };
 
 /* simplest version. shows local nodes and nonlocal edges */
 /* maybe it's good enough for everything? */
-type node2 = {
-  // id,
-  nodes: list(node2),
-  edges: list(localEdge), /* TODO: should just be `edge` */
-  constraints: array(SetCoLa.setColaConstraint),
-  nodeRender: renderedGraphElements => React.element,
-};
+/* type node2 = {
+     // id,
+     nodes: list(node2),
+     edges: list(localEdge), /* TODO: should just be `edge` */
+     constraints: array(SetCoLa.setColaConstraint),
+     nodeRender: renderedGraphElements => renderedNode /* converts this node to a rendered node
+     assuming its children have been rendered */
+   }; */
 
 /* question: how to do edge layout? */
 /* possibility: do local edges first. then fix nodes with local edges. finally do layout for
@@ -103,14 +110,16 @@ type node2 = {
 /* DPO should be possible on this representation. Look at "Algebraic hierarchical graph
    transformation" and "Abstract hierarchical graph transformation". */
 
-type sizedNode = {
-  nodes: list(sizedNode),
-  edges: list(localEdge),
-  constraints: array(SetCoLa.setColaConstraint),
-  nodeRender: renderedGraphElements => React.element,
-  width: float,
-  height: float,
-};
+/* ------------------------------------------------- */
+/* nodes with annotations for their width and height */
+/* type sizedNode = {
+     nodes: list(sizedNode),
+     edges: list(localEdge),
+     constraints: array(SetCoLa.setColaConstraint),
+     nodeRender: renderedGraphElements => React.element,
+     width: float,
+     height: float,
+   }; */
 
 /* adapted from https://bl.ocks.org/tophtucker/62f93a4658387bb61e4510c37e2e97cf */
 let measureCourier = (string, fontSize) => {
@@ -253,4 +262,24 @@ let measureCourier = (string, fontSize) => {
     |> List.fold_left((cur, acc) => acc +. cur, 0.)
   )
   *. float_of_int(fontSize);
+};
+
+/* TODO: rectangle module */
+type rectangle = {
+  x1: float,
+  x2: float,
+  y1: float,
+  y2: float,
+};
+
+type renderedNodes = {
+  bbox: rectangle,
+  nodes: list(renderedWebCoLaNode),
+};
+
+type node = {
+  nodes: list(node),
+  links: list(localEdge) /* TODO: generalize this to nonlocal edges! */,
+  constraints: array(SetCoLa.setColaConstraint),
+  render: (renderedNodes, list(localEdge)) => renderedNode,
 };
