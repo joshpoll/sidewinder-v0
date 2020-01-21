@@ -40,7 +40,17 @@ ReactDOMRe.render(<FetchedDogPictures />, makeContainer("Fetched Dog Pictures"))
 ReactDOMRe.render(<ReasonUsingJSUsingReason />, makeContainer("Reason Using JS Using Reason"));
 
 open SetCoLa;
-
+/*   "constraintDefinitions": [
+       {
+         "name": "layer",
+         "sets": {"partition": "depth"},
+         "forEach": [{ "constraint": "align", "axis": "x" }]
+       },
+       {
+         "sets": ["layer"],
+         "forEach": [{ "constraint": "order", "axis": "y", "by": "depth", "reverse": true }]
+       }
+     ] */
 let setcolaSpec = [|
   C({
     "name": "layer",
@@ -52,12 +62,55 @@ let setcolaSpec = [|
   C({
     "name": "sort",
     "sets": [|"layer"|],
-    "forEach": [|{"constraint": "order", "axis": "y", "by": "depth"}|],
+    "forEach": [|{"constraint": "order", "axis": "y", "by": "depth", "reverse": true}|],
   }),
 |];
 
 let graph = {
-  nodes: [|{name: "a"}, {name: "b"}, {name: "c"}, {name: "d"}, {name: "e"}, {name: "f"}|],
+  nodes: [|
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "a",
+      },
+    },
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "b",
+      },
+    },
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "c",
+      },
+    },
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "d",
+      },
+    },
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "e",
+      },
+    },
+    {
+      width: 10.,
+      height: 10.,
+      custom: {
+        "name": "f",
+      },
+    },
+  |],
   links: [|
     {source: NN(0), target: NN(1), length: None},
     {source: NN(0), target: NN(2), length: None},
@@ -67,7 +120,10 @@ let graph = {
   |],
 };
 
-let result = setCola->nodes(graph.nodes)->links(graph.links)->constraints(setcolaSpec)->layout;
+let result =
+  setCola->nodes(graph.nodes)->links(graph.links)->constraints(setcolaSpec)->gap(40.)->layout;
+
+Js.log(result.constraints);
 
 open WebCoLa;
 
@@ -75,9 +131,23 @@ let cola =
   colaLayout()
   ->nodes(result.nodes)
   ->links(result.links)
+  ->constraints(result.constraints)
   ->avoidOverlaps(true)
-  ->start(Some(10.), Some(15.), Some(20.), None);
+  ->linkDistance(50.)
+  ->start(Some(50.), Some(100.), Some(200.), None);
+// ->start(Some(50.), Some(100.), Some(200.), None);
 
 Js.log(getNodes(cola));
+Js.log(getLinks(cola));
 
-ReactDOMRe.render(<Visualize nodes={getNodes(cola)} links=None />, makeContainer("Sidewinder"));
+/* TODO: use renderSW in Visualize on a small example */
+
+ReactDOMRe.render(
+  <Visualize nodes={getNodes(cola)} links={getLinks(cola)} />,
+  makeContainer("Sidewinder"),
+);
+
+/* Js.log(result.nodes);
+   Js.log(result.links); */
+
+ReactDOMRe.render(<Visualize2 node=SidewinderExamples.g />, makeContainer("Sidewinder2"));

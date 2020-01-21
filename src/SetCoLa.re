@@ -8,7 +8,7 @@
    .gap(gap)                  // The default gap size to use for generating the constraints (if not specified in the SetCoLa spec)
    .layout();      */
 
-type setCola;
+type setCola('a);
 [@unboxed]
 type setColaConstraint =
   | C('a): setColaConstraint;
@@ -16,8 +16,8 @@ type setColaConstraint =
 type groups;
 type guides;
 
-type setColaLayout = {
-  nodes: array(WebCoLa.node),
+type setColaLayout('a) = {
+  nodes: array(WebCoLa.node('a)),
   links: array(WebCoLa.webColaLink),
   groups,
   guides,
@@ -26,18 +26,39 @@ type setColaLayout = {
 };
 
 /* TODO: this is the type in the example, but I'm not sure what the "real" type is. */
-type node = {name: string};
-type graph = {
-  nodes: array(node),
+type node('a) = {
+  width: float,
+  height: float,
+  custom: Js.t({..} as 'a),
+};
+type graph('a) = {
+  nodes: array(node('a)),
   links: array(WebCoLa.webColaLink),
 };
 
-[@bs.module] external setCola: setCola = "./setcola";
-[@bs.send] external nodes: (setCola, array(node)) => setCola = "nodes";
-[@bs.send] external links: (setCola, array(WebCoLa.webColaLink)) => setCola = "links";
+[@bs.module] external setCola: setCola('a) = "./setcola";
+[@bs.send] external nodes: (setCola('a), array(node('a))) => setCola('a) = "nodes";
+[@bs.send] external links: (setCola('a), array(WebCoLa.webColaLink)) => setCola('a) = "links";
 /* TODO: */
 /* [@bs.send] external groups: (setCola, groups) => setCola = "groups";
    [@bs.send] external guides: (setCola, guides) => setCola = "guides"; */
-[@bs.send] external constraints: (setCola, array(setColaConstraint)) => setCola = "constraints";
-[@bs.send] external gap: (setCola, float) => setCola = "gap";
-[@bs.send] external layout: setCola => setColaLayout = "layout";
+[@bs.send]
+external constraints: (setCola('a), array(setColaConstraint)) => setCola('a) = "constraints";
+[@bs.send] external gap: (setCola('a), float) => setCola('a) = "gap";
+[@bs.send] external layout: setCola('a) => setColaLayout('a) = "layout";
+
+/* TODO: this is not correct */
+/* type setColaOutNode('a) = {
+     _id: int,
+     depth: int,
+     custom: 'a,
+     getSources: unit => array(setColaOutNode('a)),
+     getTargets: unit => array(setColaOutNode('a)),
+     getNeighbors: unit => array(setColaOutNode('a)),
+     getIncoming: unit => array(setColaOutLink('a)),
+     getOutgoing: unit => array(setColaOutLink('a)),
+     getEdges: unit => array(setColaOutLink('a)),
+     getFirstChild: unit => Js.Nullable.t(setColaOutNode('a)),
+   }
+
+   and setColaOutLink('b) = 'b; */

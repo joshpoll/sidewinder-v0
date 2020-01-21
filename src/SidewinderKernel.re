@@ -2,10 +2,9 @@
 /* TODO: need to add rendering and constraint information */
 /* TODO: how to add transition information? */
 
-type id = string;
+type id = int;
 type absPath = list(id);
-type json = string;
-type setCoLaSpec = json;
+type setCoLaSpec = string;
 /* relPath's default root is its Graph scope */
 /* ancestorRoot acts like prepending .. to path. goes up nesting hierarchy */
 /* when ancestorRoot == 0, the path is local */
@@ -14,7 +13,14 @@ type relPath = {
   absPath,
 };
 
-type edgeRender = React.element;
+type coordinates = {
+  x1: float,
+  y1: float,
+  x2: float,
+  y2: float,
+};
+
+type edgeRender = coordinates => React.element;
 
 type edge = {
   source: id,
@@ -36,6 +42,12 @@ type localEdge = {
   source: id,
   target: id,
   edgeRender,
+};
+
+type renderedLocalEdge = {
+  source: id,
+  target: id,
+  rendered: React.element,
 };
 
 type nest = {
@@ -61,18 +73,18 @@ and node = {
    |json} */
 
 type renderedGraphElements = {
-  renderedNodes: list(React.element),
-  renderedEdges: list(React.element),
+  renderedNodes: list(ReasonReactExamples.WebCoLa.node({. rendered: React.element})),
+  renderedEdges: list(localEdge) /* TODO: change? */
 };
 
 /* simplest version. shows local nodes and nonlocal edges */
 /* maybe it's good enough for everything? */
 type node2 = {
-  id,
+  // id,
   nodes: list(node2),
-  edges: list(edge),
-  constraints: setCoLaSpec,
-  render: renderedGraphElements => React.element,
+  edges: list(localEdge), /* TODO: should just be `edge` */
+  constraints: array(SetCoLa.setColaConstraint),
+  nodeRender: renderedGraphElements => React.element,
 };
 
 /* question: how to do edge layout? */
@@ -90,3 +102,155 @@ type node2 = {
    mutate (maybe it does those, too? Haven't looked closely enough yet) */
 /* DPO should be possible on this representation. Look at "Algebraic hierarchical graph
    transformation" and "Abstract hierarchical graph transformation". */
+
+type sizedNode = {
+  nodes: list(sizedNode),
+  edges: list(localEdge),
+  constraints: array(SetCoLa.setColaConstraint),
+  nodeRender: renderedGraphElements => React.element,
+  width: float,
+  height: float,
+};
+
+/* adapted from https://bl.ocks.org/tophtucker/62f93a4658387bb61e4510c37e2e97cf */
+let measureCourier = (string, fontSize) => {
+  let widths = [|
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.,
+    0.45,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.7566665649414063,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.7666656494140625,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.7633331298828125,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.7633331298828125,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+    0.75,
+  |];
+  let avg = 0.7473684049907483;
+  (
+    string
+    |> List.map(c =>
+         c |> Js.String.charCodeAt(0) < float_of_int(Array.length(widths))
+           ? widths[c |> Js.String.charCodeAt(0) |> int_of_float] : avg
+       )
+    |> List.fold_left((cur, acc) => acc +. cur, 0.)
+  )
+  *. float_of_int(fontSize);
+};

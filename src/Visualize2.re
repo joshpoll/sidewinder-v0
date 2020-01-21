@@ -63,7 +63,9 @@ let rec renderSW = (SidewinderKernel.{nodes, edges, constraints, nodeRender}) =>
       SetCoLa.{nodes: layoutNodes |> Array.of_list, links: layoutEdges |> Array.of_list},
       constraints,
     );
-  let combinedNodes = List.combine(renderedNodes, graphLayout.colaNodes |> Array.to_list);
+  let layoutNodesNoTemp =
+    List.filter((n: WebCoLa.node('a)) => !n.temp, graphLayout.colaNodes |> Array.to_list);
+  let combinedNodes = List.combine(renderedNodes, layoutNodesNoTemp);
   let renderedNodes =
     List.map(
       ((rn, cn)) =>
@@ -95,52 +97,6 @@ let rec renderSW = (SidewinderKernel.{nodes, edges, constraints, nodeRender}) =>
 open WebCoLa;
 
 [@react.component]
-let make = (~nodes, ~links) => {
-  <svg width="1000" height="1000">
-    <g transform="translate(200, 200) scale(2)">
-      /* TODO: use _temp variable to determine whether or not to render node */
-      /* cf. https://github.com/uwdata/setcola/blob/gh-pages/app/renderer.js */
-
-        {Array.mapi(
-           (i, {x, y, temp, custom}) =>
-             <g
-               key={string_of_int(i)}
-               transform={"translate(" ++ f_to_s(x) ++ ", " ++ f_to_s(y) ++ ")"}>
-               /* <rect
-                    width="14"
-                    height="14"
-                    rx="14"
-                    ry="14"
-                    style={ReactDOMRe.Style.make(~stroke="white", ~opacity=tempOpacity(temp), ())}
-                  /> */
-
-                 <circle
-                   r="5"
-                   style={ReactDOMRe.Style.make(~stroke="white", ~opacity=tempOpacity(temp), ())}
-                 />
-                 {if (!temp) {
-                    <text>
-                       {custom##name} </text>; /* TODO: this is a hack. custom field doesn't exist on temp nodes */
-                  } else {
-                    <> </>;
-                  }}
-               </g>,
-           nodes,
-         )
-         |> React.array}
-        {Array.mapi(
-           (i, {length: _, source, target}) =>
-             <line
-               key={string_of_int(i)}
-               x1={f_to_s(source.x)}
-               y1={f_to_s(source.y)}
-               x2={f_to_s(target.x)}
-               y2={f_to_s(target.y)}
-               style={ReactDOMRe.Style.make(~stroke="black", ())}
-             />,
-           links,
-         )
-         |> React.array}
-      </g>
-  </svg>;
+let make = (~node) => {
+  <div style={ReactDOMRe.Style.make(~position="relative", ())}> {renderSW(node)} </div>;
 };
