@@ -99,12 +99,19 @@ let directionConstraints = direction =>
     }
   );
 
-let defaultRender = ({bbox, nodes}, edges): renderedNode => {
+let defaultRender = (nodes: list(renderedWebCoLaNode), edges): renderedNode => {
   let renderEdge = ({source, target, edgeRender}) => {
     let sourceNode = List.nth(nodes, source);
     let targetNode = List.nth(nodes, target);
     edgeRender({x1: sourceNode.x, y1: sourceNode.y, x2: targetNode.x, y2: targetNode.y});
   };
+  let bbox =
+    List.map(
+      ({x, y, width, height}: renderedWebCoLaNode) =>
+        Rectangle.fromPointSize(~x, ~y, ~width, ~height, ()),
+      nodes,
+    )
+    |> Rectangle.union_list;
   {
     width: Rectangle.width(bbox),
     height: Rectangle.height(bbox),
@@ -146,10 +153,9 @@ let sequence = (nodes, edgeRender, direction) => {
 
 /* NOTE! Doesn't provide any edge connections. */
 /* TODO: Could allow edges, just don't render them. */
-/* NOTE! Doesn't rely on bounding box? Because computes its own? */
 let nest = (nodes, nestRender) => {
   nodes,
   links: [],
   constraints: [||],
-  render: ({bbox: _, nodes}, _) => nestRender(nodes),
+  render: (nodes, _) => nestRender(nodes),
 };

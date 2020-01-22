@@ -264,14 +264,9 @@ let measureCourier = (string, fontSize) => {
   *. float_of_int(fontSize);
 };
 
-type renderedNodes = {
-  bbox: Rectangle.t,
-  nodes: list(renderedWebCoLaNode),
-};
-
 type node = {
   nodes: list(node),
   links: list(localEdge) /* TODO: generalize this to nonlocal edges! */,
   constraints: array(SetCoLa.setColaConstraint),
-  render: (renderedNodes, list(localEdge)) => renderedNode,
+  render: (list(renderedWebCoLaNode), list(localEdge)) => renderedNode,
 };

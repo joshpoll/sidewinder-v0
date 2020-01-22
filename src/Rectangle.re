@@ -14,7 +14,15 @@ type t = {
   y2: float,
 };
 
-let make = (~x1, ~x2, ~y1, ~y2, ()) => {x1, x2, y1, y2};
+let fromTwoPoints = (~x1, ~x2, ~y1, ~y2, ()) => {x1, x2, y1, y2};
+let fromPointSize = (~x, ~y, ~width, ~height, ()) => {
+  x1: x,
+  x2: x +. width,
+  y1: y,
+  y2: y +. height,
+};
+
+let empty = {x1: infinity, x2: neg_infinity, y1: infinity, y2: neg_infinity};
 
 let cx = ({x1, x2}) => x1 +. x2 /. 2.;
 let cy = ({y1, y2}) => y1 +. y2 /. 2.;
@@ -28,3 +36,5 @@ let union = ({x1, x2, y1, y2}, {x1: x1', x2: x2', y1: y1', y2: y2'}) => {
   y1: min(y1, y1'),
   y2: max(y2, y2'),
 };
+
+let union_list = List.fold_left(union, empty);

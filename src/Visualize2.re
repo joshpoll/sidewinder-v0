@@ -52,6 +52,7 @@ let rec renderSW =
         (SidewinderKernel.{nodes, links, constraints, render}): SidewinderKernel.renderedNode => {
   /* 1. render nodes (to get bboxes for layout) */
   let renderedNodes = List.map(renderSW, nodes);
+
   /* 2. layout graph */
   /* let layoutNodes =
      List.map(_ => SetCoLa.{width: 10., height: 10., custom: Js.Obj.empty()}, renderedNodes); */
@@ -66,18 +67,12 @@ let rec renderSW =
       SetCoLa.{nodes: renderedNodes |> Array.of_list, links: layoutEdges |> Array.of_list},
       constraints,
     );
-  /* 3. compute node's bbox (TODO!) */
-  /* may want to move bbox rendering into the render function to give the caller the choice */
-  /* can push implementation to rectangle module */
-  /* 4. render self */
+
+  /* 3. render self */
   let layoutNodesNoTemp =
     List.filter((n: WebCoLa.node('a)) => !n.temp, graphLayout.colaNodes |> Array.to_list);
-  /* TODO: compute width and height! cf. https://github.com/tgdwyer/WebCola/blob/34433da152b590ba212fc373af608b68110aa6d1/WebCola/src/rectangle.ts */
-  render(
-    {bbox: Rectangle.make(~x1=0., ~x2=0., ~y1=0., ~y2=0., ()), nodes: layoutNodesNoTemp},
-    links,
-  );
-  /* create temporary bbox-testing container */
+
+  render(layoutNodesNoTemp, links);
 };
 
 [@react.component]
