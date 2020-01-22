@@ -264,16 +264,8 @@ let measureCourier = (string, fontSize) => {
   *. float_of_int(fontSize);
 };
 
-/* TODO: rectangle module */
-type rectangle = {
-  x1: float,
-  x2: float,
-  y1: float,
-  y2: float,
-};
-
 type renderedNodes = {
-  bbox: rectangle,
+  bbox: Rectangle.t,
   nodes: list(renderedWebCoLaNode),
 };
 

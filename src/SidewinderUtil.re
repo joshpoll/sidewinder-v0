@@ -106,8 +106,8 @@ let defaultRender = ({bbox, nodes}, edges): renderedNode => {
     edgeRender({x1: sourceNode.x, y1: sourceNode.y, x2: targetNode.x, y2: targetNode.y});
   };
   {
-    width: bbox.x2 -. bbox.x1,
-    height: bbox.y2 -. bbox.y1,
+    width: Rectangle.width(bbox),
+    height: Rectangle.height(bbox),
     custom: {
       "rendered":
         <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>

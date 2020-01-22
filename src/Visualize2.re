@@ -73,19 +73,12 @@ let rec renderSW =
   let layoutNodesNoTemp =
     List.filter((n: WebCoLa.node('a)) => !n.temp, graphLayout.colaNodes |> Array.to_list);
   /* TODO: compute width and height! cf. https://github.com/tgdwyer/WebCola/blob/34433da152b590ba212fc373af608b68110aa6d1/WebCola/src/rectangle.ts */
-  render({
-           bbox: {
-             x1: 0.,
-             x2: 0.,
-             y1: 0.,
-             y2: 0.,
-           },
-           nodes: layoutNodesNoTemp,
-         }, links);
+  render(
+    {bbox: Rectangle.make(~x1=0., ~x2=0., ~y1=0., ~y2=0., ()), nodes: layoutNodesNoTemp},
+    links,
+  );
   /* create temporary bbox-testing container */
 };
-
-open WebCoLa;
 
 [@react.component]
 let make = (~node) => {
