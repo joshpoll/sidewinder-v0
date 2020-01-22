@@ -150,4 +150,7 @@ Js.log(getLinks(cola));
 /* Js.log(result.nodes);
    Js.log(result.links); */
 
-/* ReactDOMRe.render(<Visualize2 node=SidewinderExamples.g />, makeContainer("Sidewinder2")); */
+ReactDOMRe.render(
+  <Visualize2 node=SidewinderExamples.g width=500. height=500. />,
+  makeContainer("Sidewinder2"),
+);

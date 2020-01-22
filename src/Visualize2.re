@@ -31,7 +31,11 @@ type colaGraph('a) = {
 let layoutGraph = (graph, spec) => {
   let result =
     SetCoLa.(
-      setCola->nodes(graph.nodes)->links(graph.links)->constraints(spec)->gap(40.)->layout
+      setCola
+      ->nodes(graph.nodes)
+      ->links(graph.links)
+      ->constraints(spec) /* ->gap(20.) */
+      ->layout
     );
 
   let cola =
@@ -41,7 +45,7 @@ let layoutGraph = (graph, spec) => {
       ->links(result.links)
       ->constraints(result.constraints)
       ->avoidOverlaps(true)
-      ->linkDistance(50.)
+      /* ->linkDistance(50.) */
       ->start(Some(50.), Some(100.), Some(200.), None)
     );
   {colaNodes: WebCoLa.getNodes(cola), colaLinks: WebCoLa.getLinks(cola)};
@@ -70,14 +74,40 @@ let rec renderSW =
 
   /* 3. render self */
   let layoutNodesNoTemp =
-    List.filter((n: WebCoLa.node('a)) => !n.temp, graphLayout.colaNodes |> Array.to_list);
+    List.filter(
+      (n: SidewinderKernel.renderedWebCoLaNode) => !n.temp,
+      graphLayout.colaNodes |> Array.to_list,
+    )
+    |> List.map((n: SidewinderKernel.renderedWebCoLaNode) =>
+         {
+           ...n,
+           custom: {
+             "rendered": n.custom##rendered,
+             /* add bbox for rendering code to use */
+             "bbox":
+               Rectangle.fromPointSize(~x=n.x, ~y=n.y, ~width=n.width, ~height=n.height, ()),
+           },
+         }
+       );
 
   render(layoutNodesNoTemp, links);
 };
 
 [@react.component]
-let make = (~node) => {
-  <div style={ReactDOMRe.Style.make(~position="relative", ())}>
-    {renderSW(node).custom##rendered}
-  </div>;
+let make = (~node, ~width, ~height) => {
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={Js.Float.toString(width)}
+    height={Js.Float.toString(height)}>
+    <g
+      transform={
+        "translate("
+        ++ Js.Float.toString(width /. 2.)
+        ++ ", "
+        ++ Js.Float.toString(height /. 2.)
+        ++ ")"
+      }>
+      {renderSW(node).custom##rendered}
+    </g>
+  </svg>;
 };

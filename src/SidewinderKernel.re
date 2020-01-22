@@ -73,7 +73,12 @@ type renderedLocalEdge = {
    |json} */
 
 type renderedNode = SetCoLa.node({. rendered: React.element});
-type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element});
+type renderedWebCoLaNode =
+  WebCoLa.node({
+    .
+    rendered: React.element,
+    bbox: Rectangle.t,
+  });
 
 type renderedGraphElements = {
   renderedNodes: list(renderedNode),

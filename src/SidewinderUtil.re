@@ -40,7 +40,7 @@ type direction =
 let directionConstraints = direction =>
   SetCoLa.(
     switch (direction) {
-    | RightLeft => [|
+    | DownUp => [|
         C({
           "name": "layer",
           "sets": {
@@ -54,7 +54,7 @@ let directionConstraints = direction =>
           "forEach": [|{"constraint": "order", "axis": "y", "by": "depth"}|],
         }),
       |]
-    | LeftRight => [|
+    | UpDown => [|
         C({
           "name": "layer",
           "sets": {
@@ -68,7 +68,7 @@ let directionConstraints = direction =>
           "forEach": [|{"constraint": "order", "axis": "y", "by": "depth", "reverse": true}|],
         }),
       |]
-    | DownUp => [|
+    | RightLeft => [|
         C({
           "name": "layer",
           "sets": {
@@ -82,7 +82,7 @@ let directionConstraints = direction =>
           "forEach": [|{"constraint": "order", "axis": "x", "by": "depth"}|],
         }),
       |]
-    | UpDown => [|
+    | LeftRight => [|
         C({
           "name": "layer",
           "sets": {
@@ -117,29 +117,28 @@ let defaultRender = (nodes: list(renderedWebCoLaNode), edges): renderedNode => {
     height: Rectangle.height(bbox),
     custom: {
       "rendered":
-        <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
-          <div style={ReactDOMRe.Style.make(~display="inline-block", ~position="absolute", ())}>
-            {List.map(
-               (n: renderedWebCoLaNode) =>
-                 <div
-                   style={ReactDOMRe.Style.make(
-                     ~display="inline-block",
-                     ~position="absolute",
-                     ~top=Js.Float.toString(n.x) ++ "px",
-                     ~left=Js.Float.toString(n.y) ++ "px",
-                     (),
-                   )}>
+        <>
+          <g>
+            {List.mapi(
+               (i, n: renderedWebCoLaNode) =>
+                 <g
+                   key={string_of_int(i)}
+                   transform={
+                     "translate("
+                     ++ Js.Float.toString(n.custom##bbox |> Rectangle.cx)
+                     ++ ", "
+                     ++ Js.Float.toString(n.custom##bbox |> Rectangle.cy)
+                     ++ ")"
+                   }>
                    {n.custom##rendered}
-                 </div>,
+                 </g>,
                nodes,
              )
              |> Array.of_list
              |> React.array}
-          </div>
-          <div style={ReactDOMRe.Style.make(~display="inline-block", ())}>
-            {List.map(renderEdge, edges) |> Array.of_list |> React.array}
-          </div>
-        </div>,
+          </g>
+          <g> {List.map(renderEdge, edges) |> Array.of_list |> React.array} </g>
+        </>,
     },
   };
 };
