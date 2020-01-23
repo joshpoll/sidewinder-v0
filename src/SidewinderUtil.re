@@ -29,9 +29,23 @@ let rec range = (start: int, end_: int) =>
     [start, ...range(start + 1, end_)];
   };
 
-let makeEdges = (l, edgeRender) =>
+let makeEdges = (l: list(int), edgeRender): list(globalLink) =>
   List.combine(List.rev(l) |> List.tl |> List.rev, List.tl(l))
-  |> List.map(((source, target)) => {source, target, edgeRender});
+  |> List.map(((source, target)) =>
+       (
+         {
+           source: {
+             ancestorRoot: 0,
+             absPath: [source],
+           },
+           target: {
+             ancestorRoot: 0,
+             absPath: [target],
+           },
+           edgeRender,
+         }: globalLink
+       )
+     );
 
 type direction =
   | UpDown
@@ -102,7 +116,7 @@ let directionConstraints = direction =>
   );
 
 let defaultRender = (nodes: list(renderedWebCoLaNode), edges): renderedNode => {
-  let renderEdge = ({source, target, edgeRender}) => {
+  let renderEdge = ({source, target, edgeRender}: localLink) => {
     let sourceNode = List.nth(nodes, source);
     let targetNode = List.nth(nodes, target);
     edgeRender({x1: sourceNode.x, y1: sourceNode.y, x2: targetNode.x, y2: targetNode.y});

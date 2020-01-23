@@ -55,6 +55,17 @@ let layoutGraph = (graph, spec, g, ld) => {
   {colaNodes: WebCoLa.getNodes(cola), colaLinks: WebCoLa.getLinks(cola)};
 };
 
+/* TODO: this is a temporary hack */
+let globalLinkToLocalLink =
+    (
+      {source: {absPath: [source, ..._]}, target: {absPath: [target, ..._]}, edgeRender}: SidewinderKernel.globalLink,
+    )
+    : SidewinderKernel.localLink => {
+  source,
+  target,
+  edgeRender,
+};
+
 /* TODO: maybe should add to the dom at a specified location and return its bounding box? */
 let rec renderSW =
         (SidewinderKernel.{nodes, links, constraints, gap, linkDistance, render})
@@ -67,9 +78,9 @@ let rec renderSW =
      List.map(_ => SetCoLa.{width: 10., height: 10., custom: Js.Obj.empty()}, renderedNodes); */
   let layoutEdges =
     List.map(
-      (SidewinderKernel.{source, target, edgeRender: _}) =>
+      (SidewinderKernel.{source, target, edgeRender: _}: SidewinderKernel.localLink) =>
         WebCoLa.{length: None, source: NN(source), target: NN(target)},
-      links,
+      List.map(globalLinkToLocalLink, links),
     );
   let graphLayout =
     layoutGraph(
@@ -97,7 +108,7 @@ let rec renderSW =
          }
        );
 
-  render(layoutNodesNoTemp, links);
+  render(layoutNodesNoTemp, List.map(globalLinkToLocalLink, links));
 };
 
 [@react.component]
