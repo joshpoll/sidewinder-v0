@@ -41,3 +41,5 @@ external start:
 [@bs.send] external getNodes: colaLayout => array(node('a)) = "nodes";
 [@bs.send] external getLinks: colaLayout => array(link(node('a))) = "links";
 [@bs.send] external linkDistance: (colaLayout, float) => colaLayout = "linkDistance";
+[@bs.send]
+external linkDistanceFn: (colaLayout, link(node('a)) => float) => colaLayout = "linkDistance";

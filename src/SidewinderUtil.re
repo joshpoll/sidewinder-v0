@@ -6,6 +6,8 @@ let atom = (e, width, height) => {
   nodes: [],
   links: [],
   constraints: [||],
+  gap: None,
+  linkDistance: None,
   render: (_, _) => {
     width,
     height,
@@ -143,9 +145,11 @@ let defaultRender = (nodes: list(renderedWebCoLaNode), edges): renderedNode => {
   };
 };
 
-let sequence = (nodes, edgeRender, direction) => {
+let sequence = (~gap=?, ~linkDistance=?, nodes, edgeRender, direction) => {
   nodes,
   links: makeEdges(List.length(nodes) |> range(0), edgeRender),
+  gap,
+  linkDistance,
   constraints: directionConstraints(direction),
   render: defaultRender,
 };
@@ -155,6 +159,8 @@ let sequence = (nodes, edgeRender, direction) => {
 let nest = (nodes, nestRender) => {
   nodes,
   links: [],
+  gap: None,
+  linkDistance: None,
   constraints: [||],
   render: (nodes, _) => nestRender(nodes),
 };

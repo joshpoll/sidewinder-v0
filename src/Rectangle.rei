@@ -16,6 +16,11 @@ let fromPointSize: (~x: float, ~y: float, ~width: float, ~height: float, unit) =
  */
 let empty: t;
 
+let x1: t => float;
+let x2: t => float;
+let y1: t => float;
+let y2: t => float;
+
 /**
  * Horizontal center.
  */
@@ -36,3 +41,16 @@ let union: (t, t) => t;
  * Unions all rectangles in the input list.
  */
 let union_list: list(t) => t;
+
+/**
+ * Symmetrically extend width.
+ */
+let inflateWidth: (t, float) => t;
+/**
+ * Symmetrically extend height.
+ */
+let inflateHeight: (t, float) => t;
+/**
+ * Symmetrically extend width and height.
+ */
+let inflate: (t, float, float) => t;

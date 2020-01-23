@@ -273,5 +273,7 @@ type node = {
   nodes: list(node),
   links: list(localEdge) /* TODO: generalize this to nonlocal edges! */,
   constraints: array(SetCoLa.setColaConstraint),
+  gap: option(float),
+  linkDistance: option(float),
   render: (list(renderedWebCoLaNode), list(localEdge)) => renderedNode,
 };

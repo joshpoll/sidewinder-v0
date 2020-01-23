@@ -15,28 +15,25 @@
 let f_to_s = Js.Float.toString;
 
 let tempOpacity = temp => if (temp) {"0.25"} else {"1"};
-/* type node2 = {
-     id,
-     nodes: list(node2),
-     edges: list(edge),
-     constraints: setCoLaSpec,
-     nodeRender: renderedGraphElements => React.element,
-   }; */
 
 type colaGraph('a) = {
   colaNodes: array(WebCoLa.node('a)),
   colaLinks: array(WebCoLa.link(WebCoLa.node('a))),
 };
 
-let layoutGraph = (graph, spec) => {
+let layoutGraph = (graph, spec, g, ld) => {
   let result =
-    SetCoLa.(
-      setCola
-      ->nodes(graph.nodes)
-      ->links(graph.links)
-      ->constraints(spec) /* ->gap(20.) */
-      ->layout
-    );
+    SetCoLa.
+      /* TODO: add special support for sequences */
+      (setCola->nodes(graph.nodes)->links(graph.links)->constraints(spec));
+
+  let result =
+    switch (g) {
+    | None => result
+    | Some(g) => result->SetCoLa.gap(g)
+    };
+
+  let result = result->SetCoLa.layout;
 
   let cola =
     WebCoLa.(
@@ -45,15 +42,23 @@ let layoutGraph = (graph, spec) => {
       ->links(result.links)
       ->constraints(result.constraints)
       ->avoidOverlaps(true)
-      /* ->linkDistance(50.) */
-      ->start(Some(50.), Some(100.), Some(200.), None)
     );
+
+  let cola =
+    switch (ld) {
+    | None => cola
+    | Some(ld) => cola->WebCoLa.linkDistance(ld)
+    };
+
+  let cola = cola->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
+
   {colaNodes: WebCoLa.getNodes(cola), colaLinks: WebCoLa.getLinks(cola)};
 };
 
 /* TODO: maybe should add to the dom at a specified location and return its bounding box? */
 let rec renderSW =
-        (SidewinderKernel.{nodes, links, constraints, render}): SidewinderKernel.renderedNode => {
+        (SidewinderKernel.{nodes, links, constraints, gap, linkDistance, render})
+        : SidewinderKernel.renderedNode => {
   /* 1. render nodes (to get bboxes for layout) */
   let renderedNodes = List.map(renderSW, nodes);
 
@@ -70,6 +75,8 @@ let rec renderSW =
     layoutGraph(
       SetCoLa.{nodes: renderedNodes |> Array.of_list, links: layoutEdges |> Array.of_list},
       constraints,
+      gap,
+      linkDistance,
     );
 
   /* 3. render self */

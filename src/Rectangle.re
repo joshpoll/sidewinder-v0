@@ -24,6 +24,11 @@ let fromPointSize = (~x, ~y, ~width, ~height, ()) => {
 
 let empty = {x1: infinity, x2: neg_infinity, y1: infinity, y2: neg_infinity};
 
+let x1 = ({x1}) => x1;
+let x2 = ({x2}) => x2;
+let y1 = ({y1}) => y1;
+let y2 = ({y2}) => y2;
+
 let cx = ({x1, x2}) => x1 +. x2 /. 2.;
 let cy = ({y1, y2}) => y1 +. y2 /. 2.;
 
@@ -38,3 +43,7 @@ let union = ({x1, x2, y1, y2}, {x1: x1', x2: x2', y1: y1', y2: y2'}) => {
 };
 
 let union_list = List.fold_left(union, empty);
+
+let inflateWidth = ({x1, x2, y1, y2}, dx) => {x1: x1 -. dx, x2: x2 +. dx, y1, y2};
+let inflateHeight = ({x1, x2, y1, y2}, dy) => {x1, x2, y1: y1 -. dy, y2: y2 +. dy};
+let inflate = (r, dx, dy) => r->inflateWidth(dx)->inflateHeight(dy);
