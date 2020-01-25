@@ -1,9 +1,9 @@
-/* (
-     list(ReasonReactExamples.Node.size),
-     list(
-       ReasonReactExamples.Link.local
-     )
-   ) => list(ReasonReactExamples.Node.bbox) */
+type direction =
+  | UpDown
+  | DownUp
+  | LeftRight
+  | RightLeft;
+
 let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizes, links) => {
   let nodes =
     List.map(
@@ -109,9 +109,9 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
       transform={
         /* move the center of the coordinate system to the center of the box */
         "translate("
-        ++ Js.Float.toString(-. bbox->width /. 2.)
+        ++ Js.Float.toString(bbox->cx -. bbox->width /. 2.)
         ++ ", "
-        ++ Js.Float.toString(-. bbox->height /. 2.)
+        ++ Js.Float.toString(bbox->cy -. bbox->height /. 2.)
         ++ ")"
       }>
       <rect
@@ -141,6 +141,65 @@ let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
+    ~computeSize=computeSizeUnion,
+    ~render=defaultRender,
+  );
+
+/* https://2ality.com/2018/01/lists-arrays-reasonml.html */
+/**
+* Compute a list of integers starting with `start`,
+* up to and excluding `end_`.
+*/
+let rec range = (start: int, end_: int) =>
+  if (start >= end_) {
+    [];
+  } else {
+    [start, ...range(start + 1, end_)];
+  };
+
+let makeLinks = (linkRender, i) => {
+  let nodeIndices = range(0, i);
+  let stPairs =
+    List.combine(List.rev(nodeIndices) |> List.tl |> List.rev, List.tl(nodeIndices));
+  List.map(
+    ((source, t)): Link.sourceLocal =>
+      Link.{
+        source,
+        target: {
+          ancestorRoot: 0,
+          absPath: [t],
+        },
+        linkRender,
+      },
+    stPairs,
+  );
+};
+
+/* TODO: may want e.g. UpDown and DownUp options to occupy the same space rather than moving in
+   opposite direction from a shared starting point. */
+let seqPos = (i, gap, direction) =>
+  switch (direction) {
+  | UpDown => (0., float_of_int(i) *. gap)
+  | DownUp => (0., -. float_of_int(i) *. gap)
+  | LeftRight => (float_of_int(i) *. gap, 0.)
+  | RightLeft => (-. float_of_int(i) *. gap, 0.)
+  };
+
+/* TODO: should gap be gap between adjacent node sides or centers? For now assuming centers i.e.
+   treating nodes as point-like. should probably be adjacent b/c it makes more sense */
+let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
+  SideWinder.make(
+    ~nodes,
+    ~links=makeLinks(linkRender, List.length(nodes)),
+    ~layout=
+      (ns, _) =>
+        List.mapi(
+          (i, Node.{width, height}) => {
+            let (cx, cy) = seqPos(i, gap, direction);
+            Rectangle.fromCenterPointSize(~cx, ~cy, ~width, ~height);
+          },
+          ns,
+        ),
     ~computeSize=computeSizeUnion,
     ~render=defaultRender,
   );
@@ -238,28 +297,46 @@ let c' = box(~dx=5., [c], []);
 
 let d = str("/");
 let d' = box(~dx=5., [d], []);
-/* let b =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string({js|•|js})} </text>,
-       10.,
-       20.,
-     );
-   let b' = box(~dx=5., b);
-   let c =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string("4")} </text>,
-       10.,
-       20.,
-     );
-   let c' = box(~dx=5., c);
-   let d =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string("/")} </text>,
-       10.,
-       20.,
-     );
-   let d' = box(~dx=5., d);
-   let e = sequence(~gap=0.1, ~linkDistance=0.1, [a', b'], _ => <> </>, LeftRight);
-   let f = sequence(~gap=0.1, ~linkDistance=0.1, [c', d'], _ => <> </>, LeftRight);
-   /* TODO: need a nonlocal edge from b to f */
-   let g = sequence(~gap=30., [e, f], _ => <> </>, LeftRight); */
+
+let e =
+  seq(
+    ~nodes=[a', b'],
+    ~linkRender=(~source: _, ~target: _) => <> </>,
+    ~gap=20.,
+    ~direction=LeftRight,
+  );
+
+let f =
+  seq(
+    ~nodes=[c', d'],
+    ~linkRender=(~source, ~target) => <> </>,
+    ~gap=20.,
+    ~direction=LeftRight,
+  );
+
+let g =
+  graph(
+    ~nodes=[e, f],
+    ~links=[
+      Link.{
+        /* b */
+        source: 0,
+        /* f */
+        target: {
+          ancestorRoot: 0,
+          absPath: [0, 1, 0],
+        },
+        linkRender: (~source, ~target) =>
+          <line
+            x1={Js.Float.toString(source->Rectangle.cx)}
+            y1={Js.Float.toString(source->Rectangle.cy)}
+            x2={Js.Float.toString(target->Rectangle.cx)}
+            y2={Js.Float.toString(target->Rectangle.cy)}
+            stroke="blue"
+          />,
+      },
+    ],
+    ~gap=20.,
+    ~linkDistance=20.,
+    ~constraints=[||],
+  );
