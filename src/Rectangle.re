@@ -14,12 +14,13 @@ type t = {
   y2: float,
 };
 
-let fromTwoPoints = (~x1, ~x2, ~y1, ~y2, ()) => {x1, x2, y1, y2};
-let fromPointSize = (~x, ~y, ~width, ~height, ()) => {
-  x1: x,
-  x2: x +. width,
-  y1: y,
-  y2: y +. height,
+let fromTwoPoints = (~x1, ~x2, ~y1, ~y2) => {x1, x2, y1, y2};
+let fromPointSize = (~x, ~y, ~width, ~height) => {x1: x, x2: x +. width, y1: y, y2: y +. height};
+let fromCenterPointSize = (~cx, ~cy, ~width, ~height) => {
+  x1: cx -. width /. 2.,
+  x2: cx +. width /. 2.,
+  y1: cy -. height /. 2.,
+  y2: cy +. height /. 2.,
 };
 
 let empty = {x1: infinity, x2: neg_infinity, y1: infinity, y2: neg_infinity};
@@ -29,8 +30,8 @@ let x2 = ({x2}) => x2;
 let y1 = ({y1}) => y1;
 let y2 = ({y2}) => y2;
 
-let cx = ({x1, x2}) => x1 +. x2 /. 2.;
-let cy = ({y1, y2}) => y1 +. y2 /. 2.;
+let cx = ({x1, x2}) => (x1 +. x2) /. 2.;
+let cy = ({y1, y2}) => (y1 +. y2) /. 2.;
 
 let width = ({x1, x2}) => x2 -. x1;
 let height = ({y1, y2}) => y2 -. y1;

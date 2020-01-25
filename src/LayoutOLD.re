@@ -1,7 +1,7 @@
 /**
  * Compute layout of the graph.
  */
-open SidewinderKernel;
+open SideWinder.Kernel;
 
 /* let layout = ({nodes, links, constraints, gap, linkDistance, render}) => {
      let result = SetCoLa.(setCola->nodes(nodes)->links(links)->constraints(spec));

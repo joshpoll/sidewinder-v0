@@ -3,12 +3,16 @@ type t;
 /**
  * Use lower left(?) and upper right(?) corner of the rectangle.
  */
-let fromTwoPoints: (~x1: float, ~x2: float, ~y1: float, ~y2: float, unit) => t;
+let fromTwoPoints: (~x1: float, ~x2: float, ~y1: float, ~y2: float) => t;
 /**
- * Use lower left(?) corner and sizes of the rectangle.
- * TODO: Convention should match that of WebCoLa.
+ * Use upper left corner and size of the rectangle.
+ * TODO: Convention should match that of WebCoLa?
  */
-let fromPointSize: (~x: float, ~y: float, ~width: float, ~height: float, unit) => t;
+let fromPointSize: (~x: float, ~y: float, ~width: float, ~height: float) => t;
+/**
+ * Ues center of and size of the rectangle.
+ */
+let fromCenterPointSize: (~cx: float, ~cy: float, ~width: float, ~height: float) => t;
 
 /**
  * Returns an "empty" rectangle. Essentially an inversion of the plane.

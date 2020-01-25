@@ -150,7 +150,12 @@ ReactDOMRe.render(<ReasonUsingJSUsingReason />, makeContainer("Reason Using JS U
 /* Js.log(result.nodes);
    Js.log(result.links); */
 
+/* ReactDOMRe.render(
+     <Visualize2 node=SidewinderExamples.g width=500. height=500. />,
+     makeContainer("Sidewinder2"),
+   ); */
+
 ReactDOMRe.render(
-  <Visualize2 node=SidewinderExamples.g width=500. height=500. />,
-  makeContainer("Sidewinder2"),
+  <Visualize3 node=SidewinderExamples.a' width=500. height=500. />,
+  makeContainer("Sidewinder"),
 );

@@ -1,33 +1,6 @@
 /* TODO: need to improve id representation */
-/* TODO: need to add rendering and constraint information */
 /* TODO: how to add transition information? */
-
-type id = int;
-type absPath = list(id);
-type setCoLaSpec = string;
-/* relPath's default root is its Graph scope */
-/* ancestorRoot acts like prepending .. to path. goes up nesting hierarchy */
-/* when ancestorRoot == 0, the path is local */
-type relPath = {
-  ancestorRoot: int,
-  absPath,
-};
-
-type coordinates = {
-  x1: float,
-  y1: float,
-  x2: float,
-  y2: float,
-};
-
-type edgeRender = coordinates => React.element;
-
-type link = {
-  source: id,
-  target: relPath,
-  edgeRender,
-};
-
+/* TODO: move link types to a separate file */
 /* type element =
      /* nodes, constraint edges, visual edges */
      | Graph(list(node), list(edge), list(edge))
@@ -38,23 +11,11 @@ type link = {
      element,
    }; */
 
-type localLink = {
-  source: id,
-  target: id,
-  edgeRender,
-};
-
-type renderedLocalEdge = {
-  source: id,
-  target: id,
-  rendered: React.element,
-};
-
-type globalLink = {
-  source: relPath,
-  target: relPath,
-  edgeRender,
-};
+/* type renderedLocalEdge = {
+     source: id,
+     target: id,
+     rendered: React.element,
+   }; */
 
 /* type nest = {
      children: list(node),
@@ -64,7 +25,7 @@ type globalLink = {
    and element =
      | Graph(list(node), list(localEdge), setCoLaSpec)
      | Nest(nest)
-     | Ptr(React.element, relPath, edgeRender)
+     | Ptr(React.element, relPath, linkRender)
 
    and node = {
      id,
@@ -78,17 +39,11 @@ type globalLink = {
 
    |json} */
 
-type renderedNode = SetCoLa.node({. rendered: React.element});
-type renderedWebCoLaNode =
-  WebCoLa.node({
-    .
-    rendered: React.element,
-    bbox: Rectangle.t,
-  });
+type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element});
 
 type renderedGraphElements = {
-  renderedNodes: list(renderedNode),
-  renderedEdges: list(localLink) /* TODO: change? */,
+  renderedNodes: list(Node.rendered),
+  renderedEdges: list(Link.local) /* TODO: change? */,
   /* width and height of the graph. computed by unioning the node bounding boxes like webcola does */
   width: float,
   height: float,
@@ -275,72 +230,20 @@ let measureCourier = (string, fontSize) => {
   *. float_of_int(fontSize);
 };
 
-let linkToGlobalLink = ({source, target, edgeRender}: link): globalLink => {
-  source: {
-    ancestorRoot: 0,
-    absPath: [source],
-  },
-  target,
-  edgeRender,
-};
-
 type node = {
   nodes: list(node),
-  links: list(globalLink),
-  constraints: array(SetCoLa.setColaConstraint),
-  gap: option(float),
-  linkDistance: option(float),
-  render: (list(renderedWebCoLaNode), list(localLink)) => renderedNode,
+  links: list(Link.global),
+  /* constraints: array(SetCoLa.setColaConstraint),
+     gap: option(float),
+     linkDistance: option(float), */
+  layout: (list(Node.size), list(Link.local)) => list(Node.bbox),
+  computeSize: list(Node.bbox) => Node.size,
+  /* TODO: should this be lca? */
+  render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
 
-/* TODO: test this algorithm!!! */
-
-/* NOTE: Don't need to check source node because of link type restriction. */
-let isLCALink = ({source, target}: globalLink) =>
-  source.ancestorRoot == 0 && target.ancestorRoot == 0;
-
-/* processes a node and returns a layoutNode and the nonlocal links it bubbles up */
-let rec propagateLCAAux =
-        ({nodes, links, constraints, gap, linkDistance, render}: node)
-        : (node, list(globalLink)) => {
-  /* visit nodes first */
-  let (lcaNodes, bubblingLinksList) = List.map(propagateLCAAux, nodes) |> List.split;
-  /* update link paths in bubblingLinksList */
-  let bubblingLinksList =
-    List.mapi(
-      i =>
-        List.map(
-          (
-            {
-              source: {ancestorRoot: sourceRoot, absPath: sourcePath},
-              target: {ancestorRoot: targetRoot, absPath: targetPath},
-              edgeRender,
-            }: globalLink,
-          ) =>
-          {
-            source: {
-              ancestorRoot: sourceRoot,
-              absPath: [i, ...sourcePath],
-            },
-            target: {
-              ancestorRoot: targetRoot - 1,
-              absPath: targetPath,
-            },
-            edgeRender,
-          }
-        ),
-      bubblingLinksList,
-    );
-  /* separate LCA links from other global links */
-  let (lcaLinks, globalLinks) =
-    [links, ...bubblingLinksList] |> List.flatten |> List.partition(isLCALink);
-  ({nodes: lcaNodes, links: lcaLinks, constraints, gap, linkDistance, render}, globalLinks);
-};
-
-/* NOTE: Final global links list should be empty! */
-let propagateLCA = n => propagateLCAAux(n) |> fst;
-
-/* construct a node. links are turned into LCAed globalLinks automatically for constraint layout */
-let makeNode = (~nodes, ~links, ~constraints, ~gap, ~linkDistance, ~render, ()) =>
-  {nodes, links: List.map(linkToGlobalLink, links), constraints, gap, linkDistance, render}
-  |> propagateLCA;
+let rec resolveAbsPath = (node, absPath) =>
+  switch (absPath) {
+  | [] => node
+  | [h, ...t] => resolveAbsPath(List.nth(node.nodes, h), t)
+  };
