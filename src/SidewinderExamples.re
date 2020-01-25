@@ -68,18 +68,13 @@ let defaultRender = (nodes, _bbox, links) =>
   <g>
     <g className="nodes">
       {nodes
-       |> List.map((Node.{bbox, rendered}) =>
-            <g
-              transform={
+       |> List.map((Node.{bbox, rendered}) => <g> rendered </g>)  /* transform={
                 "translate("
-                ++ Js.Float.toString(bbox->Rectangle.x1)
+                ++ Js.Float.toString(-. bbox->Rectangle.width /. 2.)
                 ++ ", "
-                ++ Js.Float.toString(bbox->Rectangle.x2)
+                ++ Js.Float.toString(-. bbox->Rectangle.height /. 2.)
                 ++ ")"
-              }>
-              rendered
-            </g>
-          )
+              } */
        |> Array.of_list
        |> React.array}
     </g>
@@ -112,7 +107,12 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     Js.log3("center", bbox->cx, bbox->cy);
     <g
       transform={
-        "translate(" ++ Js.Float.toString(bbox->cx) ++ ", " ++ Js.Float.toString(bbox->cy) ++ ")"
+        /* move the center of the coordinate system to the center of the box */
+        "translate("
+        ++ Js.Float.toString(-. bbox->width /. 2.)
+        ++ ", "
+        ++ Js.Float.toString(-. bbox->height /. 2.)
+        ++ ")"
       }>
       <rect
         width={Js.Float.toString(bbox->width)}
@@ -120,7 +120,17 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
         fillOpacity="0"
         stroke="#000"
       />
-      {defaultRender(nodes, Rectangle.empty /* unused */, links)}
+      <g
+        transform={
+          /* move the center of the coordinate system to the center of the box */
+          "translate("
+          ++ Js.Float.toString(bbox->width /. 2.)
+          ++ ", "
+          ++ Js.Float.toString(bbox->height /. 2.)
+          ++ ")"
+        }>
+        {defaultRender(nodes, Rectangle.empty /* unused */, links)}
+      </g>
     </g>;
   };
   nest(~nodes, ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize, ~render);
@@ -211,12 +221,23 @@ let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
    /* TODO: need a nonlocal edge from b to f */
    let g = sequence(~gap=30., [e, f], _ => <> </>, LeftRight); */
 
-let a =
+let str = s =>
   atom(
-    <text textAnchor="middle" dominantBaseline="middle"> {React.string("2")} </text>,
+    <text textAnchor="middle" dominantBaseline="middle"> {React.string(s)} </text>,
     Node.{width: 10., height: 20.},
   );
+
+let a = str("2");
 let a' = box(~dx=5., [a], []);
+
+let b = str({js|•|js});
+let b' = box(~dx=5., [b], []);
+
+let c = str("4");
+let c' = box(~dx=5., [c], []);
+
+let d = str("/");
+let d' = box(~dx=5., [d], []);
 /* let b =
      atom(
        <text textAnchor="middle" dominantBaseline="middle"> {React.string({js|•|js})} </text>,
