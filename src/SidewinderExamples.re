@@ -1,8 +1,35 @@
+/* The problem with my current layout stuff is that I can't agree on whether the center is at the
+   top or the middle of the space! */
+/* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
+   corner. */
+let debug_ = true;
+
+let translate = (x, y, r) =>
+  <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
+    r
+  </g>;
+
 type direction =
   | UpDown
   | DownUp
   | LeftRight
   | RightLeft;
+
+let drawBBox = (~stroke="red", bbox) =>
+  <rect
+    transform={
+      "translate("
+      ++ Js.Float.toString(bbox->Rectangle.x1)
+      ++ ", "
+      ++ Js.Float.toString(bbox->Rectangle.y1)
+      ++ ")"
+    }
+    width={Js.Float.toString(bbox->Rectangle.width)}
+    height={Js.Float.toString(bbox->Rectangle.height)}
+    stroke
+    fillOpacity="0"
+    /* strokeDasharray="10 5" */
+  />;
 
 let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizes, links) => {
   let nodes =
@@ -64,30 +91,49 @@ let computeSizeUnion = bboxes => {
   Node.{width: union->Rectangle.width, height: union->Rectangle.height};
 };
 
-let defaultRender = (nodes, _bbox, links) =>
-  <g>
-    <g className="nodes">
-      {nodes
-       |> List.map((Node.{bbox, rendered}) => <g> rendered </g>)  /* transform={
-                "translate("
-                ++ Js.Float.toString(-. bbox->Rectangle.width /. 2.)
-                ++ ", "
-                ++ Js.Float.toString(-. bbox->Rectangle.height /. 2.)
-                ++ ")"
-              } */
-       |> Array.of_list
-       |> React.array}
-    </g>
-    <g className="links"> {links |> Array.of_list |> React.array} </g>
-  </g>;
+let defaultRender = (nodes, bbox, links) => {
+  Js.log2("big bbox", bbox);
+  <>
+    {drawBBox(~stroke="blue", bbox)}
+    /* translate the coordinate system */
+    {translate(
+       bbox->Rectangle.x1,
+       bbox->Rectangle.y1,
+       <>
+         <g className="nodes">
+           {nodes
+            |> List.map((Node.{bbox, rendered}) => {
+                 Js.log2("bbox", bbox);
+                 translate(bbox->Rectangle.x1, bbox->Rectangle.y1, rendered);
+               })
+            |> Array.of_list
+            |> React.array}
+         </g>
+         <g className="links"> {links |> Array.of_list |> React.array} </g>
+       </>,
+     )}
+  </>;
+};
 
+/**
+ * Inputs: the element to render and the bounding box surrounding the rendered element
+ */
 let atom = (r, size) =>
   SideWinder.make(
     ~nodes=[],
     ~links=[],
-    ~layout=(sizes, _) => List.map(Node.sizeToBBox, sizes),
+    ~layout=(_, _) => [],
     ~computeSize=_ => size,
-    ~render=(_, _, _) => r,
+    ~render=
+      (_, _, _) =>
+        <>
+          {if (debug_) {
+             drawBBox(size->Node.sizeToBBox);
+           } else {
+             <> </>;
+           }}
+          r
+        </>,
   );
 
 let nest = (~nodes, ~computeSize, ~render) =>
@@ -105,33 +151,25 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     Js.log3("p1", bbox->x1, bbox->y1);
     Js.log3("p2", bbox->x2, bbox->y2);
     Js.log3("center", bbox->cx, bbox->cy);
-    <g
-      transform={
-        /* move the center of the coordinate system to the center of the box */
-        "translate("
-        ++ Js.Float.toString(bbox->cx -. bbox->width /. 2.)
-        ++ ", "
-        ++ Js.Float.toString(bbox->cy -. bbox->height /. 2.)
-        ++ ")"
-      }>
+    Js.log3("width/2 height/2", bbox->width /. 2., bbox->height /. 2.);
+    Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
+    Js.log2("nodes", nodes |> Array.of_list);
+    <>
       <rect
+        transform={
+          "translate("
+          ++ Js.Float.toString(bbox->x1)
+          ++ ", "
+          ++ Js.Float.toString(bbox->y1)
+          ++ ")"
+        }
         width={Js.Float.toString(bbox->width)}
         height={Js.Float.toString(bbox->height)}
         fillOpacity="0"
         stroke="#000"
       />
-      <g
-        transform={
-          /* move the center of the coordinate system to the center of the box */
-          "translate("
-          ++ Js.Float.toString(bbox->width /. 2.)
-          ++ ", "
-          ++ Js.Float.toString(bbox->height /. 2.)
-          ++ ")"
-        }>
-        {defaultRender(nodes, Rectangle.empty /* unused */, links)}
-      </g>
-    </g>;
+      {defaultRender(nodes, bbox->inflate(-. dx, -. dy), links)}
+    </>;
   };
   nest(~nodes, ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize, ~render);
 };
@@ -204,87 +242,24 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
     ~render=defaultRender,
   );
 
-/* open SidewinderUtil;
-
-   let box = (~dx=0., ~dy=0., child) =>
-     nest(
-       [child],
-       ([c]) => {
-         let bbox =
-           Rectangle.(
-             fromPointSize(~x=c.x, ~y=c.y, ~width=c.width, ~height=c.height, ())->inflate(dx, dy)
-           );
-         Rectangle.{
-           width: bbox->width,
-           height: bbox->height,
-           custom: {
-             "rendered":
-               <g
-                 transform={
-                   "translate("
-                   ++ Js.Float.toString(bbox->x1)
-                   ++ ", "
-                   ++ Js.Float.toString(bbox->y1)
-                   ++ ")"
-                 }>
-                 <rect
-                   width={Js.Float.toString(bbox->width)}
-                   height={Js.Float.toString(bbox->height)}
-                   fillOpacity="0"
-                   stroke="#000"
-                   transform={
-                     "translate("
-                     ++ Js.Float.toString(-. bbox->width /. 2.)
-                     ++ ", "
-                     ++ Js.Float.toString(-. bbox->height /. 2.)
-                     ++ ")"
-                   }
-                 />
-                 {c.custom##rendered}
-               </g>,
-           },
-         };
-       },
-     );
-
-   let a =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string("2")} </text>,
-       10.,
-       20.,
-     );
-   let a' = box(~dx=5., a);
-   let b =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string({js|•|js})} </text>,
-       10.,
-       20.,
-     );
-   let b' = box(~dx=5., b);
-   let c =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string("4")} </text>,
-       10.,
-       20.,
-     );
-   let c' = box(~dx=5., c);
-   let d =
-     atom(
-       <text textAnchor="middle" dominantBaseline="middle"> {React.string("/")} </text>,
-       10.,
-       20.,
-     );
-   let d' = box(~dx=5., d);
-   let e = sequence(~gap=0.1, ~linkDistance=0.1, [a', b'], _ => <> </>, LeftRight);
-   let f = sequence(~gap=0.1, ~linkDistance=0.1, [c', d'], _ => <> </>, LeftRight);
-   /* TODO: need a nonlocal edge from b to f */
-   let g = sequence(~gap=30., [e, f], _ => <> </>, LeftRight); */
-
-let str = s =>
+let str = s => {
+  let (width, height) = (10., 20.);
   atom(
-    <text textAnchor="middle" dominantBaseline="middle"> {React.string(s)} </text>,
-    Node.{width: 10., height: 20.},
+    <text
+      textAnchor="middle"
+      dominantBaseline="middle"
+      transform={
+        "translate("
+        ++ Js.Float.toString(width /. 2.)
+        ++ ", "
+        ++ Js.Float.toString(height /. 2.)
+        ++ ")"
+      }>
+      {React.string(s)}
+    </text>,
+    {width, height},
   );
+};
 
 let a = str("2");
 let a' = box(~dx=5., [a], []);
@@ -336,7 +311,7 @@ let g =
           />,
       },
     ],
-    ~gap=20.,
-    ~linkDistance=20.,
+    ~gap=10.,
+    ~linkDistance=10.,
     ~constraints=[||],
   );
