@@ -241,6 +241,7 @@ type node = {
      the nodes produce. Right now we just assume that the nodes are rendered with bboxes with upper
      left corner at the origin. However things like inflation require recentering. It's much easier
      to track the bbox rather than the size here. */
+  /* TODO: maybe not */
   computeSize: list(Node.bbox) => Node.size,
   /* TODO: should this be lca? */
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,

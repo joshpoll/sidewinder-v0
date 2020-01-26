@@ -2,7 +2,7 @@
    top or the middle of the space! */
 /* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
    corner. */
-let debug_ = true;
+let debug_ = false;
 
 let translate = (x, y, r) =>
   <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
@@ -14,6 +14,68 @@ type direction =
   | DownUp
   | LeftRight
   | RightLeft;
+
+let directionConstraints = direction =>
+  SetCoLa.(
+    switch (direction) {
+    | DownUp => [|
+        C({
+          "name": "layer",
+          "sets": {
+            "partition": "depth",
+          },
+          "forEach": [|{"constraint": "align", "axis": "x"}|],
+        }),
+        C({
+          "name": "sort",
+          "sets": [|"layer"|],
+          "forEach": [|{"constraint": "order", "axis": "y", "by": "depth"}|],
+        }),
+      |]
+    | UpDown => [|
+        C({
+          "name": "layer",
+          "sets": {
+            "partition": "depth",
+          },
+          "forEach": [|{"constraint": "align", "axis": "x"}|],
+        }),
+        C({
+          "name": "sort",
+          "sets": [|"layer"|],
+          "forEach": [|{"constraint": "order", "axis": "y", "by": "depth", "reverse": true}|],
+        }),
+      |]
+    | RightLeft => [|
+        C({
+          "name": "layer",
+          "sets": {
+            "partition": "depth",
+          },
+          "forEach": [|{"constraint": "align", "axis": "y"}|],
+        }),
+        C({
+          "name": "sort",
+          "sets": [|"layer"|],
+          "forEach": [|{"constraint": "order", "axis": "x", "by": "depth"}|],
+        }),
+      |]
+    | LeftRight => [|
+        C({
+          "name": "layer",
+          "sets": {
+            "partition": "depth",
+          },
+          "forEach": [|{"constraint": "align", "axis": "y"}|],
+        }),
+        C({
+          "name": "sort",
+          "sets": [|"layer"|],
+          "forEach": [|{"constraint": "order", "axis": "x", "by": "depth", "reverse": true}|],
+        }),
+      |]
+    }
+  );
 
 let drawBBox = (~stroke="red", bbox) =>
   <rect
@@ -94,7 +156,7 @@ let computeSizeUnion = bboxes => {
 let defaultRender = (nodes, bbox, links) => {
   Js.log2("big bbox", bbox);
   <>
-    {drawBBox(~stroke="blue", bbox)}
+    /* {drawBBox(~stroke="blue", bbox)} */
     /* translate the coordinate system */
     {translate(
        bbox->Rectangle.x1,
@@ -104,7 +166,7 @@ let defaultRender = (nodes, bbox, links) => {
            {nodes
             |> List.map((Node.{bbox, rendered}) => {
                  Js.log2("bbox", bbox);
-                 translate(bbox->Rectangle.x1, bbox->Rectangle.y1, rendered);
+                 rendered;
                })
             |> Array.of_list
             |> React.array}
@@ -233,8 +295,8 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
       (ns, _) =>
         List.mapi(
           (i, Node.{width, height}) => {
-            let (cx, cy) = seqPos(i, gap, direction);
-            Rectangle.fromCenterPointSize(~cx, ~cy, ~width, ~height);
+            let (x, y) = seqPos(i, gap, direction);
+            Rectangle.fromPointSize(~x, ~y, ~width, ~height);
           },
           ns,
         ),
@@ -242,8 +304,7 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
     ~render=defaultRender,
   );
 
-let str = s => {
-  let (width, height) = (10., 20.);
+let str = (~width=9., ~height=12.5, s) =>
   atom(
     <text
       textAnchor="middle"
@@ -252,32 +313,31 @@ let str = s => {
         "translate("
         ++ Js.Float.toString(width /. 2.)
         ++ ", "
-        ++ Js.Float.toString(height /. 2.)
+        ++ Js.Float.toString(height /. 2. +. 1.5)
         ++ ")"
       }>
       {React.string(s)}
     </text>,
     {width, height},
   );
-};
 
 let a = str("2");
-let a' = box(~dx=5., [a], []);
+let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
-let b = str({js|•|js});
-let b' = box(~dx=5., [b], []);
+let b = atom(<circle r="2" cx="2" cy="2" />, {width: 4., height: 4.});
+let b' = box(~dx=11. /. 2., ~dy=11. /. 2., [b], []);
 
 let c = str("4");
-let c' = box(~dx=5., [c], []);
+let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [c], []);
 
 let d = str("/");
-let d' = box(~dx=5., [d], []);
+let d' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [d], []);
 
 let e =
   seq(
     ~nodes=[a', b'],
     ~linkRender=(~source: _, ~target: _) => <> </>,
-    ~gap=20.,
+    ~gap=15.,
     ~direction=LeftRight,
   );
 
@@ -285,7 +345,7 @@ let f =
   seq(
     ~nodes=[c', d'],
     ~linkRender=(~source, ~target) => <> </>,
-    ~gap=20.,
+    ~gap=15.,
     ~direction=LeftRight,
   );
 
@@ -313,5 +373,5 @@ let g =
     ],
     ~gap=10.,
     ~linkDistance=10.,
-    ~constraints=[||],
+    ~constraints=[||] /* directionConstraints(LeftRight) */ /* TODO: these constraints seem to be broken! */,
   );
