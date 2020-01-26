@@ -354,13 +354,14 @@ let g =
     ~nodes=[e, f],
     ~links=[
       Link.{
-        /* b */
-        source: 0,
+        /* TODO: should go on b so it's b->f. instead we're reversing it for now */
         /* f */
+        source: 1,
+        /* b' */
         target: {
           ancestorRoot: 0,
-          absPath: [0, 1, 0],
-        },
+          absPath: [0, 1],
+        }, /* TODO: appending 0 here should be correct and give b, but it screws up */
         linkRender: (~source, ~target) =>
           <line
             x1={Js.Float.toString(source->Rectangle.cx)}
@@ -371,7 +372,7 @@ let g =
           />,
       },
     ],
-    ~gap=10.,
-    ~linkDistance=10.,
-    ~constraints=[||] /* directionConstraints(LeftRight) */ /* TODO: these constraints seem to be broken! */,
+    ~gap=20.,
+    ~linkDistance=20.,
+    ~constraints=directionConstraints(RightLeft),
   );

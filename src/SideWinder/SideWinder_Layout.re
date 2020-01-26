@@ -7,10 +7,26 @@ type node = {
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
 
+/**
+ * Returns the sub-node in node specified by absPath.
+ * Translates its bbox to be relative to node's origin.
+ */
 let rec resolveAbsPath = (node, absPath) =>
   switch (absPath) {
   | [] => node
-  | [h, ...t] => resolveAbsPath(List.nth(node.nodes, h), t)
+  | [h, ...t] =>
+    let subNode = List.nth(node.nodes, h);
+    let subBBox = subNode.bbox;
+    Js.log2("new x1", node.bbox->Rectangle.x1 +. subBBox->Rectangle.x1);
+    Js.log2("new y1", node.bbox->Rectangle.y1 +. subBBox->Rectangle.y1);
+    let bbox =
+      Rectangle.fromPointSize(
+        ~x=node.bbox->Rectangle.x1 +. subBBox->Rectangle.x1,
+        ~y=node.bbox->Rectangle.y1 +. subBBox->Rectangle.y1,
+        ~width=subBBox->Rectangle.width,
+        ~height=subBBox->Rectangle.height,
+      );
+    resolveAbsPath({...subNode, bbox}, t);
   };
 
 /* TODO: need to run graph layout here!!! */
