@@ -180,10 +180,10 @@ let defaultRender = (nodes, bbox, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (r, size) =>
+let atom = (~links=[], r, size) =>
   SideWinder.make(
     ~nodes=[],
-    ~links=[],
+    ~links,
     ~layout=(_, _) => [],
     ~computeSize=_ => size,
     ~render=
@@ -275,31 +275,65 @@ let makeLinks = (linkRender, i) => {
   );
 };
 
-/* TODO: may want e.g. UpDown and DownUp options to occupy the same space rather than moving in
-   opposite direction from a shared starting point. */
-let seqPos = (i, gap, direction) =>
-  switch (direction) {
-  | UpDown => (0., float_of_int(i) *. gap)
-  | DownUp => (0., -. float_of_int(i) *. gap)
-  | LeftRight => (float_of_int(i) *. gap, 0.)
-  | RightLeft => (-. float_of_int(i) *. gap, 0.)
-  };
+/* let seqPos = (i, gap, size, direction) =>
+   switch (direction) {
+   | UpDown => (0., float_of_int(i) *. gap)
+   | DownUp => (0., -. float_of_int(i) *. gap)
+   | LeftRight => (float_of_int(i) *. gap, 0.)
+   | RightLeft => (-. float_of_int(i) *. gap, 0.)
+   }; */
 
-/* TODO: should gap be gap between adjacent node sides or centers? For now assuming centers i.e.
-   treating nodes as point-like. should probably be adjacent b/c it makes more sense */
+/* NOTE: gap is between neighboring sides of bounding boxes */
+/* TODO: need to recent DownUp and RightLeft so they are contained in the positive quadrant.
+   Maybe more reason to have layout take care of that type of stuff. */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
   SideWinder.make(
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=
-      (ns, _) =>
-        List.mapi(
-          (i, Node.{width, height}) => {
-            let (x, y) = seqPos(i, gap, direction);
-            Rectangle.fromPointSize(~x, ~y, ~width, ~height);
-          },
-          ns,
-        ),
+      ([n, ..._] as ns, _) => {
+        let stPairs = List.combine(List.rev(ns) |> List.tl |> List.rev, List.tl(ns));
+        let newBBox = (bbox, Node.{width, height}) =>
+          switch (direction) {
+          | UpDown =>
+            Rectangle.fromCenterPointSize(
+              ~cx=bbox->Rectangle.cx,
+              ~cy=bbox->Rectangle.y2 +. gap +. height /. 2.,
+              ~width,
+              ~height,
+            )
+          | DownUp =>
+            Rectangle.fromCenterPointSize(
+              ~cx=bbox->Rectangle.cx,
+              ~cy=bbox->Rectangle.y1 -. gap -. height /. 2.,
+              ~width,
+              ~height,
+            )
+          | LeftRight =>
+            Rectangle.fromCenterPointSize(
+              ~cx=bbox->Rectangle.x2 +. gap +. width /. 2.,
+              ~cy=bbox->Rectangle.cy,
+              ~width,
+              ~height,
+            )
+          | RightLeft =>
+            Rectangle.fromCenterPointSize(
+              ~cx=bbox->Rectangle.x1 -. gap -. width /. 2.,
+              ~cy=bbox->Rectangle.cy,
+              ~width,
+              ~height,
+            )
+          };
+        Relude.List.scanLeft((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), ns);
+      },
+    /* TODO: compute gap cumulatively. */
+    /* List.mapi(
+         (i, Node.{width, height}) => {
+           let (x, y) = seqPos(i, gap, Node.{width, height}, direction);
+           Rectangle.fromPointSize(~x, ~y, ~width, ~height);
+         },
+         ns,
+       ); */
     ~computeSize=computeSizeUnion,
     ~render=defaultRender,
   );
@@ -337,17 +371,12 @@ let e =
   seq(
     ~nodes=[a', b'],
     ~linkRender=(~source: _, ~target: _) => <> </>,
-    ~gap=15.,
+    ~gap=0.,
     ~direction=LeftRight,
   );
 
 let f =
-  seq(
-    ~nodes=[c', d'],
-    ~linkRender=(~source, ~target) => <> </>,
-    ~gap=15.,
-    ~direction=LeftRight,
-  );
+  seq(~nodes=[c', d'], ~linkRender=(~source, ~target) => <> </>, ~gap=0., ~direction=LeftRight);
 
 let g =
   graph(
@@ -360,7 +389,7 @@ let g =
         /* b' */
         target: {
           ancestorRoot: 0,
-          absPath: [0, 1],
+          absPath: [1, 0],
         }, /* TODO: appending 0 here should be correct and give b, but it screws up */
         linkRender: (~source, ~target) =>
           <line

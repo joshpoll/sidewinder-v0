@@ -15,6 +15,7 @@ type t = {
 };
 
 let fromTwoPoints = (~x1, ~x2, ~y1, ~y2) => {x1, x2, y1, y2};
+/* TODO: rename the first two inputs x1, y1 */
 let fromPointSize = (~x, ~y, ~width, ~height) => {x1: x, x2: x +. width, y1: y, y2: y +. height};
 let fromCenterPointSize = (~cx, ~cy, ~width, ~height) => {
   x1: cx -. width /. 2.,
