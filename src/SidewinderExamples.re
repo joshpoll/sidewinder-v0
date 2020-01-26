@@ -358,7 +358,30 @@ let str = (~width=9., ~height=12.5, s) =>
 let a = str("2");
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
-let b = atom(<circle r="2" cx="2" cy="2" />, {width: 4., height: 4.});
+let b =
+  atom(
+    ~links=[
+      Link.{
+        /* b */
+        source: 0,
+        /* f */
+        target: {
+          ancestorRoot: 2, /* 0 = b, 1 = b', 2 = e */
+          absPath: [0],
+        }, /* TODO: appending 0 here should be correct and give b, but it screws up */
+        linkRender: (~source, ~target) =>
+          <line
+            x1={Js.Float.toString(source->Rectangle.cx)}
+            y1={Js.Float.toString(source->Rectangle.cy)}
+            x2={Js.Float.toString(target->Rectangle.cx)}
+            y2={Js.Float.toString(target->Rectangle.cy)}
+            stroke="blue"
+          />,
+      },
+    ],
+    <circle r="2" cx="2" cy="2" />,
+    {width: 4., height: 4.},
+  );
 let b' = box(~dx=11. /. 2., ~dy=11. /. 2., [b], []);
 
 let c = str("4");
@@ -389,7 +412,7 @@ let g =
         /* b' */
         target: {
           ancestorRoot: 0,
-          absPath: [1, 0],
+          absPath: [0, 1],
         }, /* TODO: appending 0 here should be correct and give b, but it screws up */
         linkRender: (~source, ~target) =>
           <line
@@ -401,7 +424,7 @@ let g =
           />,
       },
     ],
-    ~gap=20.,
-    ~linkDistance=20.,
-    ~constraints=directionConstraints(RightLeft),
+    ~gap=25.,
+    ~linkDistance=40.,
+    ~constraints=directionConstraints(RightLeft) /* TODO: this should be LeftRight! */
   );

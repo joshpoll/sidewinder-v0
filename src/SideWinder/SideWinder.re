@@ -21,3 +21,5 @@ let render = (n: Kernel.node) =>
   |> RenderLinks.renderLinks
   |> Render.render
   |> ((Node.{rendered}) => rendered);
+
+let debugLCA = (n: Kernel.node) => n |> LCA.propagateLCA |> Js.log;
