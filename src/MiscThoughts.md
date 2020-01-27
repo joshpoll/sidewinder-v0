@@ -7,4 +7,6 @@ https://wiredjs.com/ for making hand-drawn type diagrams.
 
 TODO: For local links, I want to put it on the node containing both nodes. For nonlocal links, I
 want to put it on the source node. This suggests a non-uniform representation. It already tripped me
-up in an example, since I wanted to put the nonlocal link on the source node.
+up in an example, since I wanted to put the nonlocal link on the source node. One option could be to
+have an ancestorRoot == -1 (or just a separate variant). During LCA this would move the source node
+up a level.

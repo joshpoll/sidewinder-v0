@@ -52,7 +52,7 @@ let inflate = (r, dx, dy) => r->inflateWidth(dx)->inflateHeight(dy);
 
 let translate = ({x1, x2, y1, y2}, dx, dy) => {
   x1: x1 +. dx,
-  x2: x2 +. x2,
+  x2: x2 +. dx,
   y1: y1 +. dy,
   y2: y2 +. dy,
 };

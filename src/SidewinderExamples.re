@@ -123,13 +123,11 @@ let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizes, links) => {
   let setCoLaGraph = setCoLaGraph->SetCoLa.layout;
 
   let colaGraph =
-    WebCoLa.(
-      colaLayout()
-      ->nodes(setCoLaGraph.nodes)
-      ->links(setCoLaGraph.links)
-      ->constraints(setCoLaGraph.constraints)
-      ->avoidOverlaps(true)
-    );
+    WebCoLa.colaLayout()
+    ->WebCoLa.nodes(setCoLaGraph.nodes)
+    ->WebCoLa.links(setCoLaGraph.links)
+    ->WebCoLa.constraints(setCoLaGraph.constraints)
+    ->WebCoLa.avoidOverlaps(true);
 
   let colaGraph =
     switch (linkDistance) {
@@ -198,6 +196,8 @@ let atom = (~links=[], r, size) =>
         </>,
   );
 
+/* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
+   But if I add that as a parameter this function is the same as SideWinder.make */
 let nest = (~nodes, ~links, ~computeSize, ~render) =>
   SideWinder.make(
     ~nodes,
@@ -234,9 +234,11 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
       {defaultRender(nodes, bbox->inflate(-. dx, -. dy), links)}
     </>;
   };
-  nest(
+  SideWinder.make(
     ~nodes,
     ~links,
+    ~layout=
+      (sizes, _) => List.map(n => Node.sizeToBBox(n)->Rectangle.translate(dx, dy), sizes),
     ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize,
     ~render,
   );
@@ -377,7 +379,7 @@ let b' =
         /* f */
         target: {
           ancestorRoot: 2, /* 0 = b', 1 = e, 2 = g */
-          absPath: [1, 1, 0],
+          absPath: [1 /* 1, 0 */],
         },
         linkRender: (~source, ~target) => {
           <>
