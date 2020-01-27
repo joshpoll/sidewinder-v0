@@ -1,5 +1,3 @@
-open SideWinder.Kernel;
-
 /* /* TODO: nesting and continuations? */
 
    let atom = (e, width, height) => {
@@ -179,3 +177,16 @@ open SideWinder.Kernel;
      constraints: [||],
      render: (nodes, _) => nestRender(nodes),
    }; */
+
+/* Because Relude only implements scanl'.
+   This implementation is copied from Haskell: https://hackage.haskell.org/package/base-4.12.0.0/docs/src/GHC.List.html#scanl */
+let rec scanl: (('b, 'a) => 'b, 'b, list('a)) => list('b) =
+  (f, q, ls) => {
+    List.cons(
+      q,
+      switch (ls) {
+      | [] => []
+      | [x, ...xs] => scanl(f, f(q, x), xs)
+      },
+    );
+  };

@@ -56,3 +56,5 @@ let translate = ({x1, x2, y1, y2}, dx, dy) => {
   y1: y1 +. dy,
   y2: y2 +. dy,
 };
+
+let renderable = ({x1, x2, y1, y2}) => x1 <= x2 && y1 <= y2;

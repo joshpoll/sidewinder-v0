@@ -2,7 +2,7 @@
    top or the middle of the space! */
 /* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
    corner. */
-let debug_ = false;
+let debug_ = true;
 
 let translate = (x, y, r) =>
   <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
@@ -152,9 +152,13 @@ let computeSizeUnion = bboxes => {
 };
 
 let defaultRender = (nodes, bbox, links) => {
-  Js.log2("big bbox", bbox);
   <>
-    /* {drawBBox(~stroke="blue", bbox)} */
+    /* Js.log2("big bbox", bbox); */
+    {if (debug_) {
+       drawBBox(~stroke="blue", bbox->Rectangle.inflate(0.5, 0.5));
+     } else {
+       <> </>;
+     }}
     /* translate the coordinate system */
     {translate(
        bbox->Rectangle.x1,
@@ -217,7 +221,11 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
     Js.log2("nodes", nodes |> Array.of_list);
     <>
-      {drawBBox(~stroke="green", bbox->Rectangle.inflate(0.5, 0.5))}
+      {if (debug_) {
+         drawBBox(~stroke="green", bbox->Rectangle.inflate(0.5, 0.5));
+       } else {
+         <> </>;
+       }}
       <rect
         transform={
           "translate("
@@ -299,40 +307,62 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=
-      ([n, ..._] as ns, _) => {
+      ([n, ...rest] as ns, _) => {
+        Js.log2("seq ns sizes", ns |> Array.of_list);
         let stPairs = List.combine(List.rev(ns) |> List.tl |> List.rev, List.tl(ns));
+        /* LR
+            {w0, h0}
+            {w1, h1}
+            {w2, h2}
+            -->
+            {0, 0, w0, h0}
+            {w0 + gap, 0, w1, h1}
+            {(w0 + gap) + w1 + gap, 0, w2, h2}
+           */
         let newBBox = (bbox, Node.{width, height}) =>
           switch (direction) {
           | UpDown =>
+            raise(failwith("TODO"));
             Rectangle.fromCenterPointSize(
               ~cx=bbox->Rectangle.cx,
               ~cy=bbox->Rectangle.y2 +. gap +. height /. 2.,
-              ~width,
-              ~height,
-            )
+              ~width=bbox->Rectangle.width,
+              ~height=bbox->Rectangle.height,
+            );
           | DownUp =>
+            raise(failwith("TODO"));
             Rectangle.fromCenterPointSize(
               ~cx=bbox->Rectangle.cx,
               ~cy=bbox->Rectangle.y1 -. gap -. height /. 2.,
-              ~width,
-              ~height,
-            )
+              ~width=bbox->Rectangle.width,
+              ~height=bbox->Rectangle.height,
+            );
           | LeftRight =>
-            Rectangle.fromCenterPointSize(
-              ~cx=bbox->Rectangle.x2 +. gap +. width /. 2.,
-              ~cy=bbox->Rectangle.cy,
-              ~width,
-              ~height,
-            )
+            /* TODO: center boxes vertically */
+            Rectangle.fromPointSize(~x=bbox->Rectangle.x2 +. gap, ~y=0., ~width, ~height)
           | RightLeft =>
+            raise(failwith("TODO"));
             Rectangle.fromCenterPointSize(
               ~cx=bbox->Rectangle.x1 -. gap -. width /. 2.,
               ~cy=bbox->Rectangle.cy,
-              ~width,
-              ~height,
-            )
+              ~width=bbox->Rectangle.width,
+              ~height=bbox->Rectangle.height,
+            );
           };
-        Relude.List.scanLeft((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), ns);
+        let bboxes =
+          SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest);
+        Js.log2(
+          "seq scanl boxes",
+          SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest)
+          |> Array.of_list,
+        );
+        Js.log2("seq boxes", bboxes |> Array.of_list);
+        Js.log2("seq boxes size", bboxes |> Array.of_list |> Array.map(Node.bboxToSize));
+        /* Js.log2(
+             "test",
+             SideWinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
+           ); */
+        bboxes;
       },
     /* TODO: compute gap cumulatively. */
     /* List.mapi(
@@ -383,8 +413,11 @@ let b' =
         },
         linkRender: (~source, ~target) => {
           <>
-            {drawBBox(source)}
-            {drawBBox(target)}
+            {if (debug_) {
+               <> {drawBBox(source)} {drawBBox(target)} </>;
+             } else {
+               <> </>;
+             }}
             <line
               x1={Js.Float.toString(source->Rectangle.cx)}
               y1={Js.Float.toString(source->Rectangle.cy)}

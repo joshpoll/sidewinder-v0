@@ -60,3 +60,5 @@ let inflateHeight: (t, float) => t;
 let inflate: (t, float, float) => t;
 
 let translate: (t, float, float) => t;
+
+let renderable: t => bool;
