@@ -198,18 +198,18 @@ let atom = (~links=[], r, size) =>
         </>,
   );
 
-let nest = (~nodes, ~computeSize, ~render) =>
+let nest = (~nodes, ~links, ~computeSize, ~render) =>
   SideWinder.make(
     ~nodes,
-    ~links=[],
+    ~links,
     ~layout=(sizes, _) => List.map(Node.sizeToBBox, sizes),
     ~computeSize,
-    ~render=(n, b, _) => render(n, b),
+    ~render,
   );
 
 let box = (~dx=0., ~dy=0., nodes, links) => {
   open Rectangle;
-  let render = (nodes, bbox) => {
+  let render = (nodes, bbox, links) => {
     Js.log3("p1", bbox->x1, bbox->y1);
     Js.log3("p2", bbox->x2, bbox->y2);
     Js.log3("center", bbox->cx, bbox->cy);
@@ -217,6 +217,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
     Js.log2("nodes", nodes |> Array.of_list);
     <>
+      {drawBBox(~stroke="green", bbox->Rectangle.inflate(0.5, 0.5))}
       <rect
         transform={
           "translate("
@@ -233,7 +234,12 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
       {defaultRender(nodes, bbox->inflate(-. dx, -. dy), links)}
     </>;
   };
-  nest(~nodes, ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize, ~render);
+  nest(
+    ~nodes,
+    ~links,
+    ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize,
+    ~render,
+  );
 };
 
 let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
@@ -358,31 +364,37 @@ let str = (~width=9., ~height=12.5, s) =>
 let a = str("2");
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
-let b =
-  atom(
-    ~links=[
+let b = atom(~links=[], <circle r="2" cx="2" cy="2" />, {width: 4., height: 4.});
+let b' =
+  box(
+    ~dx=11. /. 2.,
+    ~dy=11. /. 2.,
+    [b],
+    [
       Link.{
         /* b */
         source: 0,
         /* f */
         target: {
-          ancestorRoot: 2, /* 0 = b, 1 = b', 2 = e */
-          absPath: [0],
-        }, /* TODO: appending 0 here should be correct and give b, but it screws up */
-        linkRender: (~source, ~target) =>
-          <line
-            x1={Js.Float.toString(source->Rectangle.cx)}
-            y1={Js.Float.toString(source->Rectangle.cy)}
-            x2={Js.Float.toString(target->Rectangle.cx)}
-            y2={Js.Float.toString(target->Rectangle.cy)}
-            stroke="blue"
-          />,
+          ancestorRoot: 2, /* 0 = b', 1 = e, 2 = g */
+          absPath: [1, 1, 0],
+        },
+        linkRender: (~source, ~target) => {
+          <>
+            {drawBBox(source)}
+            {drawBBox(target)}
+            <line
+              x1={Js.Float.toString(source->Rectangle.cx)}
+              y1={Js.Float.toString(source->Rectangle.cy)}
+              x2={Js.Float.toString(target->Rectangle.cx)}
+              y2={Js.Float.toString(target->Rectangle.cy)}
+              stroke="blue"
+            />
+          </>;
+        },
       },
     ],
-    <circle r="2" cx="2" cy="2" />,
-    {width: 4., height: 4.},
   );
-let b' = box(~dx=11. /. 2., ~dy=11. /. 2., [b], []);
 
 let c = str("4");
 let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [c], []);
@@ -404,27 +416,8 @@ let f =
 let g =
   graph(
     ~nodes=[e, f],
-    ~links=[
-      Link.{
-        /* TODO: should go on b so it's b->f. instead we're reversing it for now */
-        /* f */
-        source: 1,
-        /* b' */
-        target: {
-          ancestorRoot: 0,
-          absPath: [0, 1],
-        }, /* TODO: appending 0 here should be correct and give b, but it screws up */
-        linkRender: (~source, ~target) =>
-          <line
-            x1={Js.Float.toString(source->Rectangle.cx)}
-            y1={Js.Float.toString(source->Rectangle.cy)}
-            x2={Js.Float.toString(target->Rectangle.cx)}
-            y2={Js.Float.toString(target->Rectangle.cy)}
-            stroke="blue"
-          />,
-      },
-    ],
+    ~links=[],
     ~gap=25.,
     ~linkDistance=40.,
-    ~constraints=directionConstraints(RightLeft) /* TODO: this should be LeftRight! */
+    ~constraints=directionConstraints(LeftRight),
   );

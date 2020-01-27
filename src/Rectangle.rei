@@ -58,3 +58,5 @@ let inflateHeight: (t, float) => t;
  * Symmetrically extend width and height.
  */
 let inflate: (t, float, float) => t;
+
+let translate: (t, float, float) => t;

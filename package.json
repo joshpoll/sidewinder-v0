@@ -1,6 +1,10 @@
 {
   "name": "sidewinder",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/joshpoll/sidewinder.git"
+  },
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w -ws _ ",
@@ -28,7 +32,9 @@
     "webcola": "^3.4.0"
   },
   "devDependencies": {
+    "@glennsl/bs-jest": "^0.4.9",
     "bs-platform": "^7.0.2-dev.1",
+    "jest": "^25.1.0",
     "moduleserve": "^0.8.4"
   }
 }

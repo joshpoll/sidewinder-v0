@@ -49,3 +49,10 @@ let union_list = List.fold_left(union, empty);
 let inflateWidth = ({x1, x2, y1, y2}, dx) => {x1: x1 -. dx, x2: x2 +. dx, y1, y2};
 let inflateHeight = ({x1, x2, y1, y2}, dy) => {x1, x2, y1: y1 -. dy, y2: y2 +. dy};
 let inflate = (r, dx, dy) => r->inflateWidth(dx)->inflateHeight(dy);
+
+let translate = ({x1, x2, y1, y2}, dx, dy) => {
+  x1: x1 +. dx,
+  x2: x2 +. x2,
+  y1: y1 +. dy,
+  y2: y2 +. dy,
+};
