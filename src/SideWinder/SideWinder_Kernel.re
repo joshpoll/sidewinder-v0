@@ -233,13 +233,13 @@ let measureCourier = (string, fontSize) => {
 type node = {
   nodes: list(node),
   links: list(Link.global),
-  layout: (list(Node.bbox), list(Link.local)) => list(Node.bbox),
+  layout: (list(Node.sizeOffset), list(Link.local)) => list(Node.bbox),
   /* TODO: this should actually compute a *bbox*. That way we can track offsets from the origin that
      the nodes produce. Right now we just assume that the nodes are rendered with bboxes with upper
      left corner at the origin. However things like inflation require recentering. It's much easier
      to track the bbox rather than the size here. */
   /* TODO: maybe not */
-  computeBBox: list(Node.bbox) => Node.bbox,
+  computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
   /* TODO: should this be lca? */
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };

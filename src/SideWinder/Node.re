@@ -4,6 +4,7 @@ type size = {
 };
 
 type bbox = Rectangle.t;
+type sizeOffset = Rectangle.t;
 
 // type rendered = SetCoLa.node({. rendered: React.element});
 type rendered = {

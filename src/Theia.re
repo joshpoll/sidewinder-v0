@@ -1,4 +1,4 @@
-let debug_ = true;
+let debug_ = false;
 /* /* TODO: nesting and continuations? */
 
    let atom = (e, width, height) => {
@@ -377,28 +377,30 @@ let defaultRender = (nodes, bbox, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~links=[], r, bbox) =>
+let atom = (~links=[], r, sizeOffset) =>
   SideWinder.make(
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
-    ~computeBBox=_ => bbox,
+    ~computeSizeOffset=_ => sizeOffset,
     ~render=
-      (_, _, _) =>
+      (_, bbox, _) =>
         <>
-          {if (debug_ && false) {
-             drawBBox(bbox);
+          {if (debug_) {
+             <>
+               {/* {drawBBox(~stroke="purple", sizeOffset)} */ drawBBox(~stroke="magenta", bbox)}
+             </>;
            } else {
              <> </>;
            }}
-          r
+          {translate(bbox->Rectangle.x1, bbox->Rectangle.y1, r)}
         </>,
   );
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as SideWinder.make */
-let nest = (~nodes, ~links, ~computeBBox, ~render) =>
-  SideWinder.make(~nodes, ~links, ~layout=(bboxes, _) => bboxes, ~computeBBox, ~render);
+let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
+  SideWinder.make(~nodes, ~links, ~layout=(bboxes, _) => bboxes, ~computeSizeOffset, ~render);
 
 let box = (~dx=0., ~dy=0., nodes, links) => {
   open Rectangle;
@@ -435,7 +437,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     ~nodes,
     ~links,
     ~layout=(bboxes, _) => List.map(n => n->Rectangle.translate(dx, dy), bboxes),
-    ~computeBBox=bs => union_list(bs)->inflate(dx, dy),
+    ~computeSizeOffset=bs => union_list(bs)->inflate(dx, dy),
     ~render,
   );
 };
@@ -445,7 +447,7 @@ let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
-    ~computeBBox=Rectangle.union_list,
+    ~computeSizeOffset=Rectangle.union_list,
     ~render=defaultRender,
   );
 
@@ -541,11 +543,13 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
            ); */
         bboxes;
       },
-    ~computeBBox=Rectangle.union_list,
+    ~computeSizeOffset=Rectangle.union_list,
     ~render=defaultRender,
   );
 
-let str = (~width=9., ~height=12.5, s) =>
+let str = s => {
+  let width = float_of_int(String.length(s) * 10);
+  let height = 12.5;
   atom(
     <text
       textAnchor="middle"
@@ -562,3 +566,4 @@ let str = (~width=9., ~height=12.5, s) =>
     </text>,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width, ~height),
   );
+};

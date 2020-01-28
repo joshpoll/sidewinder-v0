@@ -38,18 +38,22 @@ type position = {
   y: float,
 };
 
-let rec computeBBoxes = ({nodes, links, layout, computeBBox, render}: LCA.node): node => {
-  let bboxNodes = List.map(computeBBoxes, nodes);
+/**
+ *  computes the bboxes of the child nodes of the input node
+ */
+let rec computeBBoxes = ({nodes, links, layout, computeSizeOffset, render}: LCA.node): node => {
+  let bboxSizeOffsets = List.map(computeBBoxes, nodes);
   let nodeBBoxes =
-    layout(bboxNodes |> List.map(n => n.bbox), links |> List.map(Link.lcaToLocal));
-  let bbox = computeBBox(nodeBBoxes);
-  if (List.length(bboxNodes) == List.length(nodeBBoxes)) {
+    layout(bboxSizeOffsets |> List.map(n => n.bbox), links |> List.map(Link.lcaToLocal));
+  let sizeOffset = computeSizeOffset(nodeBBoxes);
+  if (List.length(bboxSizeOffsets) == List.length(nodeBBoxes)) {
     Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
-    let nodes = List.combine(bboxNodes, nodeBBoxes) |> List.map(((n, bbox)) => {...n, bbox});
-    {nodes, links, bbox, render};
+    let nodes =
+      List.combine(bboxSizeOffsets, nodeBBoxes) |> List.map(((n, bbox)) => {...n, bbox});
+    {nodes, links, bbox: sizeOffset, render};
   } else {
     Js.log("layout function doesn't preserve nodes!");
-    Js.log2("bboxNodes", bboxNodes |> Array.of_list);
+    Js.log2("bboxSizeOffsets", bboxSizeOffsets |> Array.of_list);
     Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
     assert(false);
   };

@@ -4,8 +4,8 @@ module Kernel = SideWinder_Kernel;
 type node = {
   nodes: list(node),
   links: list(Link.lca),
-  layout: (list(Node.bbox), list(Link.local)) => list(Node.bbox),
-  computeBBox: list(Node.bbox) => Node.bbox,
+  layout: (list(Node.sizeOffset), list(Link.local)) => list(Node.bbox),
+  computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
 
@@ -40,7 +40,8 @@ let globalToLCA =
 
 /* processes a node and returns a layoutNode and the nonlocal links it bubbles up */
 let rec propagateLCAAux =
-        ({nodes, links, layout, computeBBox, render}: Kernel.node): (node, list(Link.global)) => {
+        ({nodes, links, layout, computeSizeOffset, render}: Kernel.node)
+        : (node, list(Link.global)) => {
   /* visit nodes first */
   let (lcaNodes, bubblingLinksList) = List.map(propagateLCAAux, nodes) |> List.split;
   /* update link paths in bubblingLinksList */
@@ -75,7 +76,13 @@ let rec propagateLCAAux =
   let (lcaLinks, globalLinks) =
     [links, ...bubblingLinksList] |> List.flatten |> List.partition(isLCALink);
   (
-    {nodes: lcaNodes, links: lcaLinks |> List.map(globalToLCA), layout, computeBBox, render},
+    {
+      nodes: lcaNodes,
+      links: lcaLinks |> List.map(globalToLCA),
+      layout,
+      computeSizeOffset,
+      render,
+    },
     globalLinks,
   );
 };

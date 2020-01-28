@@ -104,16 +104,16 @@ let linkRender = (~source, ~target) => {
   </>;
 };
 
-let ast0 = str("Add", ~width=40., ~height=12.5);
-let ast1 = str("Constant", ~width=80., ~height=12.5);
-let ast2 = str("Negate", ~width=80., ~height=12.5);
-let ast3 = str("19", ~width=9., ~height=12.5);
-let ast4 = str("Constant", ~width=9., ~height=12.5);
-let ast5 = str("4", ~width=9., ~height=12.5);
+let ast0 = str("Add");
+let ast1 = str("Constant");
+let ast2 = str("Negate");
+let ast3 = str("19");
+let ast4 = str("Constant");
+let ast5 = str("4");
 
 let astExample =
   graph(
-    ~nodes=[a', a', a'] /* ast0, ast1, ast2, ast3, ast4, ast5 */,
+    ~nodes=[ast0, ast1, ast2, ast3, ast4, ast5],
     ~links=[
       Link.{
         /* Add -> Constant */
@@ -133,8 +133,35 @@ let astExample =
         },
         linkRender,
       },
+      Link.{
+        /* Constant -> 19 */
+        source: 1,
+        target: {
+          ancestorRoot: 0,
+          absPath: [3],
+        },
+        linkRender,
+      },
+      Link.{
+        /* Negate -> Constant */
+        source: 2,
+        target: {
+          ancestorRoot: 0,
+          absPath: [4],
+        },
+        linkRender,
+      },
+      Link.{
+        /* Constant -> 4 */
+        source: 4,
+        target: {
+          ancestorRoot: 0,
+          absPath: [5],
+        },
+        linkRender,
+      },
     ],
-    ~gap=40.,
-    ~linkDistance=40.,
+    ~gap=20.,
+    ~linkDistance=80.,
     ~constraints=directionConstraints(UpDown),
   );
