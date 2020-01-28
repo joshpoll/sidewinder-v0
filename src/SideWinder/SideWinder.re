@@ -7,11 +7,11 @@ module RenderLinks = SideWinder_RenderLinks;
 module Render = SideWinder_Render;
 
 /* construct a node. links are turned into lcaLinks automatically for constraint layout */
-let make = (~nodes, ~links, ~layout, ~computeSize, ~render): Kernel.node => {
+let make = (~nodes, ~links, ~layout, ~computeBBox, ~render): Kernel.node => {
   nodes,
   links: List.map(Link.sourceLocalToGlobal, links),
   layout,
-  computeSize,
+  computeBBox,
   render,
 };
 

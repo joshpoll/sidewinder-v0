@@ -38,14 +38,11 @@ type position = {
   y: float,
 };
 
-let rec computeBBoxes = ({nodes, links, layout, computeSize, render}: LCA.node): node => {
+let rec computeBBoxes = ({nodes, links, layout, computeBBox, render}: LCA.node): node => {
   let bboxNodes = List.map(computeBBoxes, nodes);
   let nodeBBoxes =
-    layout(
-      bboxNodes |> List.map(n => n.bbox |> Node.bboxToSize),
-      links |> List.map(Link.lcaToLocal),
-    );
-  let bbox = computeSize(nodeBBoxes) |> Node.sizeToBBox;
+    layout(bboxNodes |> List.map(n => n.bbox), links |> List.map(Link.lcaToLocal));
+  let bbox = computeBBox(nodeBBoxes);
   if (List.length(bboxNodes) == List.length(nodeBBoxes)) {
     Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
     let nodes = List.combine(bboxNodes, nodeBBoxes) |> List.map(((n, bbox)) => {...n, bbox});

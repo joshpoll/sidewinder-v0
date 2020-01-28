@@ -1,7 +1,7 @@
 open Jest;
 
 let dummyLayout = (_, _) => [];
-let dummyComputeSize = _ => Node.{width: 0., height: 0.};
+let dummyComputeBBox = _ => Rectangle.fromPointSize(~x=0., ~y=0., ~width=0., ~height=0.);
 
 let dummyRender = (_, _, _) => <> </>;
 
@@ -12,7 +12,7 @@ let make = (~nodes, ~links) =>
     ~nodes,
     ~links,
     ~layout=dummyLayout,
-    ~computeSize=dummyComputeSize,
+    ~computeBBox=dummyComputeBBox,
     ~render=dummyRender,
   );
 
@@ -21,7 +21,7 @@ let makeLCA = (~nodes, ~links) =>
     nodes,
     links,
     layout: dummyLayout,
-    computeSize: dummyComputeSize,
+    computeBBox: dummyComputeBBox,
     render: dummyRender,
   };
 

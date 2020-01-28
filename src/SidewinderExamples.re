@@ -2,7 +2,7 @@
    top or the middle of the space! */
 /* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
    corner. */
-let debug_ = true;
+let debug_ = false;
 
 let translate = (x, y, r) =>
   <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
@@ -93,11 +93,16 @@ let drawBBox = (~stroke="red", bbox) =>
     /* strokeDasharray="10 5" */
   />;
 
-let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizes, links) => {
+let graphLayout = (~constraints, ~gap, ~linkDistance, nodeBBoxes, links) => {
   let nodes =
     List.map(
-      (Node.{width, height}) => SetCoLa.{width, height, custom: Js.Obj.empty()},
-      nodeSizes,
+      bbox =>
+        SetCoLa.{
+          width: bbox->Rectangle.width,
+          height: bbox->Rectangle.height,
+          custom: Js.Obj.empty(),
+        },
+      nodeBBoxes,
     )
     |> Array.of_list;
   let links =
@@ -138,23 +143,25 @@ let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizes, links) => {
   let colaGraph = colaGraph->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
 
   let nodes = colaGraph->WebCoLa.getNodes;
-  nodes
-  |> Array.to_list
-  |> List.filter((WebCoLa.{temp}) => !temp)
-  |> List.map((WebCoLa.{x, y, width, height}) =>
-       Rectangle.fromPointSize(~x, ~y, ~width, ~height)
-     );
-};
-
-let computeSizeUnion = bboxes => {
+  let bboxes =
+    nodes
+    |> Array.to_list
+    |> List.filter((WebCoLa.{temp}) => !temp)
+    |> List.map((WebCoLa.{x, y, width, height}) =>
+         Rectangle.fromPointSize(~x, ~y, ~width, ~height)
+       );
+  /* TODO: this translation works, but not sure why. need to fix things. renders it at the origin */
   let union = Rectangle.union_list(bboxes);
-  Node.{width: union->Rectangle.width, height: union->Rectangle.height};
+  List.map(
+    bbox => bbox->Rectangle.translate(-. union->Rectangle.x1, -. union->Rectangle.y1),
+    bboxes,
+  );
 };
 
 let defaultRender = (nodes, bbox, links) => {
   <>
-    /* Js.log2("big bbox", bbox); */
     {if (debug_) {
+       Js.log2("default render bbox", bbox);
        drawBBox(~stroke="blue", bbox->Rectangle.inflate(0.5, 0.5));
      } else {
        <> </>;
@@ -182,17 +189,17 @@ let defaultRender = (nodes, bbox, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~links=[], r, size) =>
+let atom = (~links=[], r, bbox) =>
   SideWinder.make(
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
-    ~computeSize=_ => size,
+    ~computeBBox=_ => bbox,
     ~render=
       (_, _, _) =>
         <>
-          {if (debug_) {
-             drawBBox(size->Node.sizeToBBox);
+          {if (debug_ && false) {
+             drawBBox(bbox);
            } else {
              <> </>;
            }}
@@ -202,14 +209,8 @@ let atom = (~links=[], r, size) =>
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as SideWinder.make */
-let nest = (~nodes, ~links, ~computeSize, ~render) =>
-  SideWinder.make(
-    ~nodes,
-    ~links,
-    ~layout=(sizes, _) => List.map(Node.sizeToBBox, sizes),
-    ~computeSize,
-    ~render,
-  );
+let nest = (~nodes, ~links, ~computeBBox, ~render) =>
+  SideWinder.make(~nodes, ~links, ~layout=(bboxes, _) => bboxes, ~computeBBox, ~render);
 
 let box = (~dx=0., ~dy=0., nodes, links) => {
   open Rectangle;
@@ -245,9 +246,8 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
   SideWinder.make(
     ~nodes,
     ~links,
-    ~layout=
-      (sizes, _) => List.map(n => Node.sizeToBBox(n)->Rectangle.translate(dx, dy), sizes),
-    ~computeSize=bs => union_list(bs)->inflate(dx, dy)->Node.bboxToSize,
+    ~layout=(bboxes, _) => List.map(n => n->Rectangle.translate(dx, dy), bboxes),
+    ~computeBBox=bs => union_list(bs)->inflate(dx, dy),
     ~render,
   );
 };
@@ -257,7 +257,7 @@ let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
-    ~computeSize=computeSizeUnion,
+    ~computeBBox=Rectangle.union_list,
     ~render=defaultRender,
   );
 
@@ -291,16 +291,8 @@ let makeLinks = (linkRender, i) => {
   );
 };
 
-/* let seqPos = (i, gap, size, direction) =>
-   switch (direction) {
-   | UpDown => (0., float_of_int(i) *. gap)
-   | DownUp => (0., -. float_of_int(i) *. gap)
-   | LeftRight => (float_of_int(i) *. gap, 0.)
-   | RightLeft => (-. float_of_int(i) *. gap, 0.)
-   }; */
-
 /* NOTE: gap is between neighboring sides of bounding boxes */
-/* TODO: need to recent DownUp and RightLeft so they are contained in the positive quadrant.
+/* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
   SideWinder.make(
@@ -309,7 +301,6 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
     ~layout=
       ([n, ...rest] as ns, _) => {
         Js.log2("seq ns sizes", ns |> Array.of_list);
-        let stPairs = List.combine(List.rev(ns) |> List.tl |> List.rev, List.tl(ns));
         /* LR
             {w0, h0}
             {w1, h1}
@@ -350,29 +341,25 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
             );
           };
         let bboxes =
-          SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest);
-        Js.log2(
-          "seq scanl boxes",
-          SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest)
-          |> Array.of_list,
-        );
-        Js.log2("seq boxes", bboxes |> Array.of_list);
-        Js.log2("seq boxes size", bboxes |> Array.of_list |> Array.map(Node.bboxToSize));
+          SideWinder.Util.scanl(
+            (bbox, size) => newBBox(bbox, size),
+            n,
+            rest |> List.map(Node.bboxToSize) /* TODO: come up with a better solution here */,
+          );
+        /* Js.log2(
+             "seq scanl boxes",
+             SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest)
+             |> Array.of_list,
+           );
+           Js.log2("seq boxes", bboxes |> Array.of_list);
+           Js.log2("seq boxes size", bboxes |> Array.of_list |> Array.map(Node.bboxToSize)); */
         /* Js.log2(
              "test",
              SideWinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
            ); */
         bboxes;
       },
-    /* TODO: compute gap cumulatively. */
-    /* List.mapi(
-         (i, Node.{width, height}) => {
-           let (x, y) = seqPos(i, gap, Node.{width, height}, direction);
-           Rectangle.fromPointSize(~x, ~y, ~width, ~height);
-         },
-         ns,
-       ); */
-    ~computeSize=computeSizeUnion,
+    ~computeBBox=Rectangle.union_list,
     ~render=defaultRender,
   );
 
@@ -390,13 +377,18 @@ let str = (~width=9., ~height=12.5, s) =>
       }>
       {React.string(s)}
     </text>,
-    {width, height},
+    Rectangle.fromPointSize(~x=0., ~y=0., ~width, ~height),
   );
 
 let a = str("2");
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
-let b = atom(~links=[], <circle r="2" cx="2" cy="2" />, {width: 4., height: 4.});
+let b =
+  atom(
+    ~links=[],
+    <circle r="2" cx="2" cy="2" />,
+    Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+  );
 let b' =
   box(
     ~dx=11. /. 2.,
@@ -419,11 +411,11 @@ let b' =
                <> </>;
              }}
             <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
+              x1={Js.Float.toString(source->Rectangle.x2)}
               y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.cx)}
+              x2={Js.Float.toString(target->Rectangle.x1)}
               y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="blue"
+              stroke="purple"
             />
           </>;
         },

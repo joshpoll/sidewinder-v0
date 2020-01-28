@@ -39,15 +39,15 @@
 
    |json} */
 
-type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element});
+/* type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element}); */
 
-type renderedGraphElements = {
-  renderedNodes: list(Node.rendered),
-  renderedEdges: list(Link.local) /* TODO: change? */,
-  /* width and height of the graph. computed by unioning the node bounding boxes like webcola does */
-  width: float,
-  height: float,
-};
+/* type renderedGraphElements = {
+     renderedNodes: list(Node.rendered),
+     renderedEdges: list(Link.local) /* TODO: change? */,
+     /* width and height of the graph. computed by unioning the node bounding boxes like webcola does */
+     width: float,
+     height: float,
+   }; */
 
 /* simplest version. shows local nodes and nonlocal edges */
 /* maybe it's good enough for everything? */
@@ -233,16 +233,13 @@ let measureCourier = (string, fontSize) => {
 type node = {
   nodes: list(node),
   links: list(Link.global),
-  /* constraints: array(SetCoLa.setColaConstraint),
-     gap: option(float),
-     linkDistance: option(float), */
-  layout: (list(Node.size), list(Link.local)) => list(Node.bbox),
+  layout: (list(Node.bbox), list(Link.local)) => list(Node.bbox),
   /* TODO: this should actually compute a *bbox*. That way we can track offsets from the origin that
      the nodes produce. Right now we just assume that the nodes are rendered with bboxes with upper
      left corner at the origin. However things like inflation require recentering. It's much easier
      to track the bbox rather than the size here. */
   /* TODO: maybe not */
-  computeSize: list(Node.bbox) => Node.size,
+  computeBBox: list(Node.bbox) => Node.bbox,
   /* TODO: should this be lca? */
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
