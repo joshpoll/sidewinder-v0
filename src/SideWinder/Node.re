@@ -1,18 +1,37 @@
-type size = {
-  width: float,
-  height: float,
-};
-
-type bbox = Rectangle.t;
 type sizeOffset = Rectangle.t;
 
-// type rendered = SetCoLa.node({. rendered: React.element});
+type point = {
+  x: float,
+  y: float,
+};
+
+/**
+ * sizeOffset stores the size and offset from the origin of the node when it's rendered in its
+default position.
+ * translation moves this box around.
+ */
+type bbox = {
+  translation: point,
+  sizeOffset,
+};
+
 type rendered = {
   bbox,
   rendered: React.element,
 };
 
-let sizeToBBox = ({width, height}) =>
-  /* Rectangle.fromCenterPointSize(~cx=0., ~cy=0., ~width, ~height); */
-  Rectangle.fromPointSize(~x=0., ~y=0., ~width, ~height);
-let bboxToSize = bbox => {width: bbox->Rectangle.width, height: bbox->Rectangle.height};
+let sizeOffsetToBBox = sizeOffset => {
+  translation: {
+    x: 0.,
+    y: 0.,
+  },
+  sizeOffset,
+};
+
+let bboxToSizeOffset = ({translation: {x, y}, sizeOffset}) =>
+  Rectangle.fromPointSize(
+    ~x=x +. sizeOffset->Rectangle.x1,
+    ~y=y +. sizeOffset->Rectangle.y1,
+    ~width=sizeOffset->Rectangle.width,
+    ~height=sizeOffset->Rectangle.height,
+  );

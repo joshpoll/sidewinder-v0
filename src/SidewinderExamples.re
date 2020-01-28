@@ -4,17 +4,6 @@
    corner. */
 open Theia;
 
-let cons = (h, t) =>
-  seq(
-    ~nodes=[
-      box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [str(h)], []),
-      box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [str(t)], []),
-    ],
-    ~linkRender=(~source: _, ~target: _) => <> </>,
-    ~gap=0.,
-    ~direction=LeftRight,
-  );
-
 let a = str("2");
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
@@ -41,7 +30,10 @@ let b' =
         linkRender: (~source, ~target) => {
           <>
             {if (debug_) {
-               <> {drawBBox(source)} {drawBBox(target)} </>;
+               <>
+                 {drawBBox(Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Node.sizeOffsetToBBox(target))}
+               </>;
              } else {
                <> </>;
              }}
@@ -85,12 +77,15 @@ let g =
   );
 
 /**
- * AST Example: https://courses.cs.washington.edu/courses/cse341/19sp/lec5slides.pdf
- */
+       * AST Example: https://courses.cs.washington.edu/courses/cse341/19sp/lec5slides.pdf
+       */
 let linkRender = (~source, ~target) => {
   <>
     {if (debug_) {
-       <> {drawBBox(source)} {drawBBox(target)} </>;
+       <>
+         {drawBBox(Node.sizeOffsetToBBox(source))}
+         {drawBBox(Node.sizeOffsetToBBox(target))}
+       </>;
      } else {
        <> </>;
      }}

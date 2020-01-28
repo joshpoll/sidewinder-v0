@@ -11,7 +11,10 @@ type node = {
 let renderLink = (node: Layout.node, Link.{source, target, linkRender}: Link.lca): React.element => {
   let sourceNode = Layout.resolveAbsPath(node, source);
   let targetNode = Layout.resolveAbsPath(node, target);
-  linkRender(~source=sourceNode.bbox, ~target=targetNode.bbox);
+  linkRender(
+    ~source=Node.bboxToSizeOffset(sourceNode.bbox),
+    ~target=Node.bboxToSizeOffset(targetNode.bbox),
+  );
 };
 
 let rec renderLinks = (Layout.{nodes, links, bbox, render} as n): node => {

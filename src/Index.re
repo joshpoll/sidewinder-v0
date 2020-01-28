@@ -156,6 +156,11 @@ ReactDOMRe.render(<ReasonUsingJSUsingReason />, makeContainer("Reason Using JS U
    ); */
 
 ReactDOMRe.render(
-  <Visualize3 node=SidewinderExamples.astExample width=1000. height=500. />,
-  makeContainer("Sidewinder"),
+  <Visualize3 node=SidewinderExamples.g width=500. height=300. />,
+  makeContainer("linked list"),
+);
+
+ReactDOMRe.render(
+  <Visualize3 node=SidewinderExamples.astExample width=500. height=300. />,
+  makeContainer("AST"),
 );
