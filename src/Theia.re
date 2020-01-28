@@ -1,4 +1,4 @@
-let debug_ = false;
+let debug_ = true;
 /* /* TODO: nesting and continuations? */
 
    let atom = (e, width, height) => {
@@ -403,13 +403,13 @@ let nest = (~nodes, ~links, ~computeBBox, ~render) =>
 let box = (~dx=0., ~dy=0., nodes, links) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
-    Js.log3("p1", bbox->x1, bbox->y1);
-    Js.log3("p2", bbox->x2, bbox->y2);
-    Js.log3("center", bbox->cx, bbox->cy);
-    Js.log3("width/2 height/2", bbox->width /. 2., bbox->height /. 2.);
-    Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
-    Js.log2("nodes", nodes |> Array.of_list);
     <>
+      /*     Js.log3("p1", bbox->x1, bbox->y1);
+             Js.log3("p2", bbox->x2, bbox->y2);
+             Js.log3("center", bbox->cx, bbox->cy);
+             Js.log3("width/2 height/2", bbox->width /. 2., bbox->height /. 2.);
+             Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
+             Js.log2("nodes", nodes |> Array.of_list); */
       {if (debug_) {
          drawBBox(~stroke="green", bbox->Rectangle.inflate(0.5, 0.5));
        } else {
@@ -501,13 +501,7 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
         let newBBox = (bbox, Node.{width, height}) =>
           switch (direction) {
           | UpDown =>
-            raise(failwith("TODO"));
-            Rectangle.fromCenterPointSize(
-              ~cx=bbox->Rectangle.cx,
-              ~cy=bbox->Rectangle.y2 +. gap +. height /. 2.,
-              ~width=bbox->Rectangle.width,
-              ~height=bbox->Rectangle.height,
-            );
+            Rectangle.fromPointSize(~x=0., ~y=bbox->Rectangle.y2 +. gap, ~width, ~height)
           | DownUp =>
             raise(failwith("TODO"));
             Rectangle.fromCenterPointSize(
@@ -556,6 +550,7 @@ let str = (~width=9., ~height=12.5, s) =>
     <text
       textAnchor="middle"
       dominantBaseline="middle"
+      fontFamily="courier"
       transform={
         "translate("
         ++ Js.Float.toString(width /. 2.)

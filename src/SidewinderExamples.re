@@ -4,6 +4,17 @@
    corner. */
 open Theia;
 
+let cons = (h, t) =>
+  seq(
+    ~nodes=[
+      box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [str(h)], []),
+      box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [str(t)], []),
+    ],
+    ~linkRender=(~source: _, ~target: _) => <> </>,
+    ~gap=0.,
+    ~direction=LeftRight,
+  );
+
 let a = str("2");
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
@@ -71,4 +82,59 @@ let g =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+  );
+
+/**
+ * AST Example: https://courses.cs.washington.edu/courses/cse341/19sp/lec5slides.pdf
+ */
+let linkRender = (~source, ~target) => {
+  <>
+    {if (debug_) {
+       <> {drawBBox(source)} {drawBBox(target)} </>;
+     } else {
+       <> </>;
+     }}
+    <line
+      x1={Js.Float.toString(source->Rectangle.cx)}
+      y1={Js.Float.toString(source->Rectangle.y2)}
+      x2={Js.Float.toString(target->Rectangle.cx)}
+      y2={Js.Float.toString(target->Rectangle.y1)}
+      stroke="black"
+    />
+  </>;
+};
+
+let ast0 = str("Add", ~width=40., ~height=12.5);
+let ast1 = str("Constant", ~width=80., ~height=12.5);
+let ast2 = str("Negate", ~width=80., ~height=12.5);
+let ast3 = str("19", ~width=9., ~height=12.5);
+let ast4 = str("Constant", ~width=9., ~height=12.5);
+let ast5 = str("4", ~width=9., ~height=12.5);
+
+let astExample =
+  graph(
+    ~nodes=[a', a', a'] /* ast0, ast1, ast2, ast3, ast4, ast5 */,
+    ~links=[
+      Link.{
+        /* Add -> Constant */
+        source: 0,
+        target: {
+          ancestorRoot: 0,
+          absPath: [1],
+        },
+        linkRender,
+      },
+      Link.{
+        /* Add -> Negate */
+        source: 0,
+        target: {
+          ancestorRoot: 0,
+          absPath: [2],
+        },
+        linkRender,
+      },
+    ],
+    ~gap=40.,
+    ~linkDistance=40.,
+    ~constraints=directionConstraints(UpDown),
   );

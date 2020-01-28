@@ -156,6 +156,6 @@ ReactDOMRe.render(<ReasonUsingJSUsingReason />, makeContainer("Reason Using JS U
    ); */
 
 ReactDOMRe.render(
-  <Visualize3 node=SidewinderExamples.g width=500. height=500. />,
+  <Visualize3 node=SidewinderExamples.astExample width=500. height=500. />,
   makeContainer("Sidewinder"),
 );
