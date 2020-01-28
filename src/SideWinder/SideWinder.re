@@ -1,5 +1,4 @@
 /* namespace goodness */
-module Util = Sidewinder_Util;
 module Kernel = SideWinder_Kernel;
 module LCA = SideWinder_LCA;
 module Layout = SideWinder_Layout;
