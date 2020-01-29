@@ -22,4 +22,4 @@ let render = (n: Kernel.node) =>
   |> Render.render
   |> ((Node.{rendered}) => rendered);
 
-let debugLCA = (n: Kernel.node) => n |> LCA.propagateLCA |> Js.log;
+let debugLCA = (n: Kernel.node) => n |> LCA.propagateLCA |> Js.log2("debug lca");

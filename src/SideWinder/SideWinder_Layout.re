@@ -14,9 +14,10 @@ type node = {
 let rec resolveAbsPath = (node, absPath) =>
   switch (absPath) {
   | [] =>
-    Js.log("bbox end");
+    Js.log2("resolveAbsPath bbox end", node.bbox);
     node;
   | [h, ...t] =>
+    Js.log2("resolveAbsPath curr bbox", node.bbox);
     let subNode = List.nth(node.nodes, h);
     /* Js.log3("bbox node (x1, y1)", node.bbox->Rectangle.x1, node.bbox->Rectangle.y1);
        Js.log3("bbox subNode (x1, y1)", subNode.bbox->Rectangle.x1, subNode.bbox->Rectangle.y1);

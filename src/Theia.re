@@ -201,9 +201,10 @@ let defaultRender = (nodes, bbox, links) => {
             |> Array.of_list
             |> React.array}
          </g>
-         <g className="links"> {links |> Array.of_list |> React.array} </g>
        </>,
      )}
+    /* TODO: links already take their parent translation into account unlike nodes. is that good? */
+    <g className="links"> {links |> Array.of_list |> React.array} </g>
   </>;
 };
 

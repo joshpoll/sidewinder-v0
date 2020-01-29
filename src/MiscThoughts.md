@@ -12,3 +12,5 @@ have an ancestorRoot == -1 (or just a separate variant). During LCA this would m
 up a level.
 
 TODO: check out https://stackoverflow.com/a/43892905 for resolving React key warning.
+
+TODO: if a target node doesn't exist, because its path is above the root node, then canonicalization seems to remove it?!? That's really cool.
