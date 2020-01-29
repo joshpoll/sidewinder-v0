@@ -331,6 +331,7 @@ let makeLinks = (linkRender, i) => {
 /* NOTE: gap is between neighboring sides of bounding boxes */
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
+/* TODO: add an alignment flag for beginning/middle/end or something */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
   SideWinder.make(
     ~nodes,
@@ -353,12 +354,12 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
           switch (direction) {
           | UpDown => {
               translation: {
-                x: 0. /* TODO: probably need to offset sizeOffset here */,
+                x: -. sizeOffset->Rectangle.x1 /* -. sizeOffset->Rectangle.width   /. 2. /* center horizontally */ */, /* move to origin */
                 y:
-                  bbox.translation.y
-                  +. bbox.sizeOffset->Rectangle.y2
-                  +. gap
-                  -. sizeOffset->Rectangle.y1,
+                  -. sizeOffset->Rectangle.y1  /* move to origin */
+                  +. bbox.translation.y  /* translate past prev. bbox */
+                  +. bbox.sizeOffset->Rectangle.y2  /* translate past prev. bbox */
+                  +. gap /* add gap */,
               },
               sizeOffset,
             }
@@ -370,17 +371,17 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
                ~width=bbox->Rectangle.width,
                ~height=bbox->Rectangle.height,
              ); */
-          | LeftRight =>
-            /* TODO: center boxes vertically */
-            {
-              /* TODO: probably need to offset sizeOffset in these calculations */
+          | LeftRight => {
               translation: {
                 x:
-                  bbox.translation.x
-                  +. bbox.sizeOffset->Rectangle.x2
-                  +. gap
-                  -. sizeOffset->Rectangle.x1,
-                y: -. sizeOffset->Rectangle.y1,
+                  -. sizeOffset->Rectangle.x1  /* move to origin */
+                  +. bbox.translation.x  /* translate past prev. bbox */
+                  +. bbox.sizeOffset->Rectangle.x2  /* translate past prev. bbox */
+                  +. gap /* add gap */,
+                y:
+                  -. sizeOffset->Rectangle.y1  /* move to origin */
+                  -. sizeOffset->Rectangle.height
+                  /. 2. /* center vertically */,
               },
               sizeOffset,
             }
@@ -403,7 +404,7 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
           switch (direction) {
           | UpDown => {
               translation: {
-                x: -. n->Rectangle.x1,
+                x: -. n->Rectangle.x1 /* -. n->Rectangle.width /. 2. */,
                 y: 0.,
               },
               sizeOffset: n,
@@ -412,7 +413,7 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
           | LeftRight => {
               translation: {
                 x: 0.,
-                y: -. n->Rectangle.y1,
+                y: -. n->Rectangle.y1 -. n->Rectangle.height /. 2.,
               },
               sizeOffset: n,
             }
