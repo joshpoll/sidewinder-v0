@@ -401,7 +401,13 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
         };
         let initialBBox =
           switch (direction) {
-          | UpDown => raise(failwith("TODO"))
+          | UpDown => {
+              translation: {
+                x: -. n->Rectangle.x1,
+                y: 0.,
+              },
+              sizeOffset: n,
+            }
           | DownUp => raise(failwith("TODO"))
           | LeftRight => {
               translation: {

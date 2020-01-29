@@ -50,6 +50,6 @@ ReactDOMRe.render(
 );
 
 ReactDOMRe.render(
-  <Visualize3 node=Append.xBinding width=500. height=300. />,
+  <Visualize3 node=Append.env width=500. height=300. />,
   makeContainer("extended linked list example"),
 );
