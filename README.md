@@ -2,37 +2,59 @@
 
 Sidewinder is the successor to Theia. Its main objective is to allow users to express a wide range
 of state+transition abstractions and transformations. To accomplish this, Sidewinder represents
-program state using *hierarchical graphs*. We build off existing literature in this space, but find
-that no existing representation is entirely suitable for our needs (maybe). Using hierarchical
-graphs makes Sidewinder much more expressive and much simpler than Theia. Where Theia had
-seven/eight constructs and counting, Sidewinder has just two/three. Theia is a DSL on top of
-Sidewinder that covers many abstract machines. This simplicity makes transformation specification
-far simpler and more formal (since many papers already address hierarchical graph transformation).
-For example, converting a sequence to a tree by adding extra state is difficult to impossible in
-Theia, but very natural in Sidewinder. Representing a tool like Oddity might require adding new
-nodes to Theia, but can be relatively easily represented in Sidewinder.
+program state using *compound graphs*. We build on and are inspired by the existing hierarchical and
+compound graph literature, with Eclipse's ELK and T.W. Pratt's H-Graph probably being the closest
+prior work. Using compound graphs makes Sidewinder much more expressive and much simpler than Theia.
+Where Theia had seven/eight constructs and counting, Sidewinder has just one (albeit a compound
+graph is more complex than any of Theia's constructs). Theia is now a DSL on top of Sidewinder that
+covers many abstract machines, making it a suitable target for debugger writers.
 
-Sidewinder uses hierarchical graphs with information about layout and rendering. It lays out the
-diagram using SetCoLa, a high-level constraint language for WebCoLa. Authors can write DSLs for
-different language domains, which can serve as interfaces to debugger writers and that compile to
-Sidewinder specifications. Authors can also write hierarchical graph transformations that are
-language-agnostic.
+Sidewinder's simplicity makes transformation specification far simpler and more formal. We can now
+rely on the existing hierarchical/compound graph literature for this formalism. For example,
+converting a sequence to a tree via an IR transformation would be possible in Theia, but doesn't
+seem very natural. When should one construct turn into the other? Why are some constructs (like map)
+easily expressible as others (like sequence)? Sidewinder makes these transformations more natural.
+They always send compound graphs to compound graphs. Another example: Representing a tool like
+Oddity might require adding new nodes to Theia, but can be relatively easily represented in
+Sidewinder.
+
+Unlike Theia, Sidewinder makes it easy for authors to customize its output. To customize Theia, an
+author needed to change the actual source code of the renderer. Even then, one could only change the
+look of _every_ value or _every_ sequence in an output, not the look of individual nodes, unless
+they passed in some custom parameters. In contrast, Sidewinder exposes both layout and rendering to
+authors, affording ubiquitous customization. Every node has custom rendering and layout. Every link
+has custom rendering.
+
+With this system, authors can easily write DSLs simply by writing functions that construct pieces of
+compound graphs with their own custom layout and rendering. These DSLs can serve as interfaces to
+debugger writers, who can be oblivious to Sidewinder's compound graph representation. Moreover, this
+approach allows authors to write language-agnostic compound graph transformations.
 
 Existing Enabling Ideas:
 - Use graphs to represent program structure.
-- Constraints allow for expressive graph layout.
-- Hierarchical graph representation.
+- Compound and hierarchical graph representations.
 - "Essence of" papers strive to find the kernel of a program representation. Sidewinder aims to do
   that for Theia.
 
 Key Ideas(?):
-- Adding a little bit more HTML/CSS rendering to a graph can make it look like a more arbitrary
-  diagram. Nearly all graph layout examples I can find are too constrained to using graph layout for
-  simple nodes and edges rather than more complex layout.
-- There are powerful, simple, language-agnostic transformations and these transformations rely on
-  both state and transition information. We only need a few to replicate existing diagrams when
-  starting with ground-truth semantics.
-- Comparison to T.W. Pratt's H-Graph
+- We can use a uniform compound graph representation to visualize structures that don't seem very
+  graph-like at all!
+- To make layout predictable and reasonably stable under common transformations, we restrict layout
+  to local nodes in a special way (see LCA pass). Links are specified in the compound graph using
+  relative paths. The link definition is then "bubbled" up to the LCA of the source and target
+  nodes, treated as local to that node for layout, and then rendered normally.
+- We catalog the transformations/abstractions necessary to recreate SML diagrams used in 341. This
+  process has two uses:
+  - We produce powerful, simple, language-agnostic transformations, and these transformations rely
+    on both state and transition information. We only need a few to replicate existing diagrams when
+    starting with ground-truth semantics.
+  - We catalog the types of abstractions instructors use. This is an interesting area for future
+    work. We could study what abstractions people use in practice and how often, now that we can
+    talk about them rigorously!
+
+Related Work
+- Comparison to T.W. Pratt's H-Graph from "Definition of Programming Language Semantics Using
+  Grammars for Hierarchical Graphs" and also another paper of his (forgot which one).
   - "Within an H-graph, a particular directed graph may only exist as the value of some node, and
     the arcs and initial node designation are "local" to that graph. The nodes, however, are not
     local to the graph; a node is inherently "global" in that it may appear in many different graphs
@@ -45,10 +67,14 @@ Key Ideas(?):
     this more accurately models existing diagrams. Typically, people visualize shared data using
     global pointers to a single region (e.g. heap) rather than a global node in multiple region.
     Moreover, Pratt's Figure 1, which visualizes the Lisp expression `(A (B (C A)) D)`, can be
-    replicated in Sidewinder, because the debugger and language semantics are resonsible for
+    replicated in Sidewinder, because the debugger and language semantics are responsible for
     remembering that the two `A`'s are the same. Sidewinder can be oblivious to this and work just
     fine without a global pointer to a shared data structure.
-  - Pratt's technique works well when defining semantics, which we are not concerned with.
+    - Addendum: Sidewinder's tracking of data flow can also capture that two A's are the same if
+      they are labeled as such by the debugger. Also, there are cases where one *would* like the same
+      node to appear in multiple graphs, such as when layering two visualizations. This is an area
+      for future work.
+  - H-Graphs are useful for defining semantics. Sidewinder is good for visualizing them.
 
 ## ReasonReact Template & Examples
 
