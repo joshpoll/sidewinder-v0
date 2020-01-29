@@ -40,7 +40,7 @@ describe("LCA", () => {
     make(
       ~nodes=[a],
       ~links=[Link.{
-                source: 0,
+                source: Some(0),
                 target: {
                   ancestorRoot: 1,
                   absPath: [1],

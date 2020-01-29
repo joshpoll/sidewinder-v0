@@ -9,22 +9,13 @@ let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
 
 let b =
   atom(
-    ~links=[],
-    <circle r="2" cx="2" cy="2" />,
-    Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
-  );
-let b' =
-  box(
-    ~dx=11. /. 2.,
-    ~dy=11. /. 2.,
-    [b],
-    [
+    ~links=[
       Link.{
         /* b */
-        source: 0,
+        source: None,
         /* f */
         target: {
-          ancestorRoot: 2, /* 0 = b', 1 = e, 2 = g */
+          ancestorRoot: 3, /* 0 = b, 1 = b', 2 = e, 3 = g */
           absPath: [1 /* 1, 0 */],
         },
         linkRender: (~source, ~target) => {
@@ -48,7 +39,10 @@ let b' =
         },
       },
     ],
+    <circle r="2" cx="2" cy="2" />,
+    Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
   );
+let b' = box(~dx=11. /. 2., ~dy=11. /. 2., [b], []);
 
 let c = str("4");
 let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [c], []);
@@ -112,7 +106,7 @@ let astExample =
     ~links=[
       Link.{
         /* Add -> Constant */
-        source: 0,
+        source: Some(0),
         target: {
           ancestorRoot: 0,
           absPath: [1],
@@ -121,7 +115,7 @@ let astExample =
       },
       Link.{
         /* Add -> Negate */
-        source: 0,
+        source: Some(0),
         target: {
           ancestorRoot: 0,
           absPath: [2],
@@ -130,7 +124,7 @@ let astExample =
       },
       Link.{
         /* Constant -> 19 */
-        source: 1,
+        source: Some(1),
         target: {
           ancestorRoot: 0,
           absPath: [3],
@@ -139,7 +133,7 @@ let astExample =
       },
       Link.{
         /* Negate -> Constant */
-        source: 2,
+        source: Some(2),
         target: {
           ancestorRoot: 0,
           absPath: [4],
@@ -148,7 +142,7 @@ let astExample =
       },
       Link.{
         /* Constant -> 4 */
-        source: 4,
+        source: Some(4),
         target: {
           ancestorRoot: 0,
           absPath: [5],

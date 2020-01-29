@@ -316,7 +316,7 @@ let makeLinks = (linkRender, i) => {
   List.map(
     ((source, t)): Link.sourceLocal =>
       Link.{
-        source,
+        source: Some(source),
         target: {
           ancestorRoot: 0,
           absPath: [t],

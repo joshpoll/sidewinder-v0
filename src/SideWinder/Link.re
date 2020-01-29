@@ -17,8 +17,9 @@ type local = {
   linkRender,
 };
 
+/* if source is None, the node is the source, otherwise one of its sub nodes is the source */
 type sourceLocal = {
-  source: id,
+  source: option(id),
   target: relPath,
   linkRender,
 };
@@ -44,7 +45,11 @@ let lcaToLocal = ({source: [s, ..._], target: [t, ..._], linkRender}: lca): loca
 let sourceLocalToGlobal = ({source, target, linkRender}: sourceLocal): global => {
   source: {
     ancestorRoot: 0,
-    absPath: [source],
+    absPath:
+      switch (source) {
+      | None => []
+      | Some(id) => [id]
+      },
   },
   target,
   linkRender,
