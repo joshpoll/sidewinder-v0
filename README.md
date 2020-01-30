@@ -37,13 +37,7 @@ Existing Enabling Ideas:
   that for Theia.
 
 Key Ideas(?):
-- We can use a uniform compound graph representation to visualize structures that don't seem very
-  graph-like at all!
-- To make layout predictable and reasonably stable under common transformations, we restrict layout
-  to local nodes in a special way (see LCA pass). Links are specified in the compound graph using
-  relative paths. The link definition is then "bubbled" up to the LCA of the source and target
-  nodes, treated as local to that node for layout, and then rendered normally.
-- We catalog the transformations/abstractions necessary to recreate SML diagrams used in 341. This
+- We catalog the **transformations/abstractions** necessary to recreate SML diagrams used in 341. This
   process has two uses:
   - We produce powerful, simple, language-agnostic transformations, and these transformations rely
     on both state and transition information. We only need a few to replicate existing diagrams when
@@ -51,6 +45,13 @@ Key Ideas(?):
   - We catalog the types of abstractions instructors use. This is an interesting area for future
     work. We could study what abstractions people use in practice and how often, now that we can
     talk about them rigorously!
+- **Algorithmic contribution**: To make layout predictable and reasonably stable under common transformations, we restrict layout
+  to local nodes in a special way (see LCA pass). Links are specified in the compound graph using
+  relative paths. The link definition is then "bubbled" up to the LCA of the source and target
+  nodes, treated as local to that node for layout, and then rendered normally.
+- Based on prior work (ELK), we can use a uniform compound graph representation to visualize structures that don't seem very graph-like at all! [not a contribution]
+
+
 
 Related Work
 - Comparison to T.W. Pratt's H-Graph from "Definition of Programming Language Semantics Using
