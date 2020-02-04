@@ -27,7 +27,6 @@ let makeContainer = text => {
   content;
 };
 
-// All 4 examples.
 ReactDOMRe.render(
   <Visualize3 node=SidewinderExamples.g width=500. height=300. />,
   makeContainer("linked list"),
