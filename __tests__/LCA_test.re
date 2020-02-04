@@ -8,7 +8,7 @@ let dummyRender = (_, _, _) => <> </>;
 let linkRender = (~source, ~target) => <> </>;
 
 let make = (~nodes, ~links) =>
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes,
     ~links,
     ~layout=dummyLayout,
@@ -17,7 +17,7 @@ let make = (~nodes, ~links) =>
   );
 
 let makeLCA = (~nodes, ~links) =>
-  SideWinder.LCA.{
+  Sidewinder.LCA.{
     nodes,
     links,
     layout: dummyLayout,
@@ -58,7 +58,7 @@ describe("LCA", () => {
 
   Expect.(
     test("bubbles one level in small example", () =>
-      expect(d |> SideWinder.LCA.propagateLCA) |> toEqual(d')
+      expect(d |> Sidewinder.LCA.propagateLCA) |> toEqual(d')
     )
   );
 });

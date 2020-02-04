@@ -1,9 +1,9 @@
 /* namespace goodness */
-module Kernel = SideWinder_Kernel;
-module LCA = SideWinder_LCA;
-module Layout = SideWinder_Layout;
-module RenderLinks = SideWinder_RenderLinks;
-module Render = SideWinder_Render;
+module Kernel = Sidewinder_Kernel;
+module LCA = Sidewinder_LCA;
+module Layout = Sidewinder_Layout;
+module RenderLinks = Sidewinder_RenderLinks;
+module Render = Sidewinder_Render;
 
 /* construct a node. links are turned into lcaLinks automatically for constraint layout */
 let make = (~nodes, ~links, ~layout, ~computeSizeOffset, ~render): Kernel.node => {

@@ -1,5 +1,5 @@
 /* Least Common Ancestor algorithm. */
-module Kernel = SideWinder_Kernel;
+module Kernel = Sidewinder_Kernel;
 
 type node = {
   nodes: list(node),

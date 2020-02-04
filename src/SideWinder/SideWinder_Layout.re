@@ -1,4 +1,4 @@
-module LCA = SideWinder_LCA;
+module LCA = Sidewinder_LCA;
 
 type node = {
   nodes: list(node),

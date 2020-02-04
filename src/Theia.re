@@ -212,7 +212,7 @@ let defaultRender = (nodes, bbox, links) => {
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
 let atom = (~links=[], r, sizeOffset) =>
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
@@ -232,9 +232,9 @@ let atom = (~links=[], r, sizeOffset) =>
   );
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
-   But if I add that as a parameter this function is the same as SideWinder.make */
+   But if I add that as a parameter this function is the same as Sidewinder.make */
 let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -280,7 +280,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
        )}
     </>;
   };
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -290,7 +290,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
 };
 
 let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
@@ -333,7 +333,7 @@ let makeLinks = (linkRender, i) => {
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
-  SideWinder.make(
+  Sidewinder.make(
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=
@@ -424,14 +424,14 @@ let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
         // Js.log2("seq union", Rectangle.union_list(bboxes));
         /* Js.log2(
              "seq scanl boxes",
-             SideWinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest)
+             Sidewinder.Util.scanl((bbox, size) => newBBox(bbox, size), Node.sizeToBBox(n), rest)
              |> Array.of_list,
            );
            Js.log2("seq boxes", bboxes |> Array.of_list);
            Js.log2("seq boxes size", bboxes |> Array.of_list |> Array.map(Node.bboxToSize)); */
         /* Js.log2(
              "test",
-             SideWinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
+             Sidewinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
            ); */
         bboxes;
       },

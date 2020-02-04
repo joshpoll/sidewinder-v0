@@ -1,4 +1,4 @@
-module RenderLinks = SideWinder_RenderLinks;
+module RenderLinks = Sidewinder_RenderLinks;
 
 let rec render = (RenderLinks.{nodes, links, bbox, render: nodeRender}) => {
   let nodes = List.map(render, nodes);

@@ -1,5 +1,5 @@
-module Kernel = SideWinder_Kernel;
-module Layout = SideWinder_Layout;
+module Kernel = Sidewinder_Kernel;
+module Layout = Sidewinder_Layout;
 
 type node = {
   nodes: list(node),
