@@ -1,6 +1,5 @@
 /* A bunch of link types */
-module Node = Sidewinder_Node; /* TODO: need an rei file to hide this line from the outside world. */
-open Sidewinder_Path;
+open Path;
 
 /* TODO: this is the same as rectangle although it's used for a different purpose. combine? */
 type linkRender = (~source: Node.sizeOffset, ~target: Node.sizeOffset) => React.element;

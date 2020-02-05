@@ -8,7 +8,7 @@ let dummyRender = (_, _, _) => <> </>;
 let linkRender = (~source, ~target) => <> </>;
 
 let make = (~nodes, ~links) =>
-  Sidewinder.make(
+  Main.make(
     ~nodes,
     ~links,
     ~layout=dummyLayout,
@@ -17,7 +17,7 @@ let make = (~nodes, ~links) =>
   );
 
 let makeLCA = (~nodes, ~links) =>
-  Sidewinder.LCA.{
+  LCA.{
     nodes,
     links,
     layout: dummyLayout,

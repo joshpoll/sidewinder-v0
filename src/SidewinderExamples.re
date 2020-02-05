@@ -2,7 +2,6 @@
    top or the middle of the space! */
 /* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
    corner. */
-open Sidewinder;
 open Theia;
 
 let a = str("2");

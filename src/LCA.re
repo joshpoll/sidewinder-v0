@@ -1,8 +1,4 @@
 /* Least Common Ancestor algorithm. */
-module Node = Sidewinder_Node;
-module Link = Sidewinder_Link;
-module Kernel = Sidewinder_Kernel;
-
 type node = {
   nodes: list(node),
   links: list(Link.lca),

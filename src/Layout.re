@@ -1,7 +1,3 @@
-module Node = Sidewinder_Node;
-module Link = Sidewinder_Link;
-module LCA = Sidewinder_LCA;
-
 type node = {
   nodes: list(node),
   links: list(Link.lca),

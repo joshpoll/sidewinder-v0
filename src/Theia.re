@@ -1,6 +1,5 @@
 let debug_ = false;
-open Sidewinder;
-open Sidewinder.Node;
+open Node;
 
 /* Because Relude only implements scanl'.
    This implementation is copied from Haskell: https://hackage.haskell.org/package/base-4.12.0.0/docs/src/GHC.List.html#scanl */
@@ -213,7 +212,7 @@ let defaultRender = (nodes, bbox, links) => {
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
 let atom = (~links=[], r, sizeOffset) =>
-  Sidewinder.make(
+  Main.make(
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
@@ -235,7 +234,7 @@ let atom = (~links=[], r, sizeOffset) =>
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
 let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
-  Sidewinder.make(
+  Main.make(
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -281,7 +280,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
        )}
     </>;
   };
-  Sidewinder.make(
+  Main.make(
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -291,7 +290,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
 };
 
 let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
-  Sidewinder.make(
+  Main.make(
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
@@ -334,7 +333,7 @@ let makeLinks = (linkRender, i) => {
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
-  Sidewinder.make(
+  Main.make(
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=

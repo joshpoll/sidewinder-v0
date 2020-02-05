@@ -1,6 +1,6 @@
 [@react.component]
 let make = (~node, ~width, ~height) => {
-  Sidewinder.debugLCA(node);
+  Main.debugLCA(node);
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={Js.Float.toString(width)}
@@ -13,7 +13,7 @@ let make = (~node, ~width, ~height) => {
         ++ Js.Float.toString(height /. 2.)
         ++ ")"
       }>
-      {Sidewinder.render(node)}
+      {Main.render(node)}
     </g>
   </svg>;
 };
