@@ -4,12 +4,13 @@
     "react-jsx": 3,
   },
   "sources": [
-    {
-      "dir": "src",
-      "subdirs": true
-    },
+    "src",
     {
       "dir": "__tests__",
+      "type": "dev"
+    },
+    {
+      "dir": "examples",
       "type": "dev"
     }
   ],
