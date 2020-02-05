@@ -1,3 +1,5 @@
+module Node = Sidewinder_Node;
+module Link = Sidewinder_Link;
 /* TODO: need to improve id representation */
 /* TODO: how to add transition information? */
 /* TODO: move link types to a separate file */

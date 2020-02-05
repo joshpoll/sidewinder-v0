@@ -1,3 +1,6 @@
+module Node = Sidewinder_Node;
+module Link = Sidewinder_Link;
+
 module Kernel = Sidewinder_Kernel;
 module Layout = Sidewinder_Layout;
 

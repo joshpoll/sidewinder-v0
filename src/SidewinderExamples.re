@@ -2,6 +2,7 @@
    top or the middle of the space! */
 /* NOTE: everything should be rendered so that its bounding box starts at the origin in the top left
    corner. */
+open Sidewinder;
 open Theia;
 
 let a = str("2");
@@ -22,8 +23,8 @@ let b =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;

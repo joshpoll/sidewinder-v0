@@ -1,5 +1,6 @@
 let debug_ = false;
-open Node;
+open Sidewinder;
+open Sidewinder.Node;
 
 /* Because Relude only implements scanl'.
    This implementation is copied from Haskell: https://hackage.haskell.org/package/base-4.12.0.0/docs/src/GHC.List.html#scanl */

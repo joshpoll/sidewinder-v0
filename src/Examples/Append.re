@@ -1,4 +1,5 @@
 /* Slide 22: https://courses.cs.washington.edu/courses/cse341/19sp/lec3slides.pdf */
+open Sidewinder;
 open Theia;
 
 let x = str("x");
@@ -30,8 +31,8 @@ let xPtr0 =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;
@@ -109,8 +110,8 @@ let yPtr0 =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;
@@ -153,8 +154,8 @@ let yPtr1 =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;
@@ -233,8 +234,8 @@ let zPtr0 =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;
@@ -279,8 +280,8 @@ let zPtr1 =
           <>
             {if (debug_) {
                <>
-                 {drawBBox(Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Node.sizeOffsetToBBox(target))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
                </>;
              } else {
                <> </>;
