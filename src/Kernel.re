@@ -78,7 +78,10 @@
 
 /* ------------------------------------------------- */
 
+type tag = string;
+
 type node = {
+  tags: list(tag) /* TODO: this is an experiment for writing some transformations. they are   currently erased during LCA. might want to propagate them so rendering can use tags. not sure */,
   nodes: list(node),
   links: list(Link.global),
   layout: (list(Node.sizeOffset), list(Link.local)) => list(Node.bbox),

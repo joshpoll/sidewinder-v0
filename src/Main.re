@@ -1,5 +1,6 @@
 /* construct a node. links are turned into lcaLinks automatically for constraint layout */
-let make = (~nodes, ~links, ~layout, ~computeSizeOffset, ~render): Kernel.node => {
+let make = (~tags, ~nodes, ~links, ~layout, ~computeSizeOffset, ~render): Kernel.node => {
+  tags,
   nodes,
   links: List.map(Link.sourceLocalToGlobal, links),
   layout,

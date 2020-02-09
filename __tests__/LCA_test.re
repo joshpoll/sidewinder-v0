@@ -35,9 +35,10 @@ describe("LCA", () => {
    links:
    a -> c
    */
-  let a = make(~nodes=[], ~links=[]);
+  let a = make(~tags=[], ~nodes=[], ~links=[]);
   let b =
     make(
+      ~tags=[],
       ~nodes=[a],
       ~links=[
         Sidewinder.Link.{
@@ -50,8 +51,8 @@ describe("LCA", () => {
         },
       ],
     );
-  let c = make(~nodes=[], ~links=[]);
-  let d = make(~nodes=[b, c], ~links=[]);
+  let c = make(~tags=[], ~nodes=[], ~links=[]);
+  let d = make(~tags=[], ~nodes=[b, c], ~links=[]);
 
   let a' = makeLCA(~nodes=[], ~links=[]);
   let b' = makeLCA(~nodes=[a'], ~links=[]);
