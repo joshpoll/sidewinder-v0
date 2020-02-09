@@ -213,6 +213,7 @@ let defaultRender = (nodes, bbox, links) => {
  */
 let atom = (~links=[], r, sizeOffset) =>
   Main.make(
+    ~tags=["atom"],
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
@@ -235,6 +236,7 @@ let atom = (~links=[], r, sizeOffset) =>
    But if I add that as a parameter this function is the same as Sidewinder.make */
 let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
   Main.make(
+    ~tags=["nest"],
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -281,6 +283,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
     </>;
   };
   Main.make(
+    ~tags=["box"],
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -291,6 +294,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
 
 let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
   Main.make(
+    ~tags=["graph"],
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
@@ -334,6 +338,7 @@ let makeLinks = (linkRender, i) => {
 /* TODO: add an alignment flag for beginning/middle/end or something */
 let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
   Main.make(
+    ~tags=["seq"],
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=
