@@ -5,7 +5,7 @@
 open Theia;
 
 let a = str("2");
-let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [a], []);
+let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., a, []);
 
 let b =
   atom(
@@ -42,13 +42,13 @@ let b =
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
   );
-let b' = box(~dx=11. /. 2., ~dy=11. /. 2., [b], []);
+let b' = box(~dx=11. /. 2., ~dy=11. /. 2., b, []);
 
 let c = str("4");
-let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [c], []);
+let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., c, []);
 
 let d = str("/");
-let d' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., [d], []);
+let d' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., d, []);
 
 let e =
   seq(

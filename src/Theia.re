@@ -244,7 +244,7 @@ let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
     ~render,
   );
 
-let box = (~dx=0., ~dy=0., nodes, links) => {
+let box = (~dx=0., ~dy=0., node, links) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
@@ -284,7 +284,7 @@ let box = (~dx=0., ~dy=0., nodes, links) => {
   };
   Main.make(
     ~tags=["box"],
-    ~nodes,
+    ~nodes=[node],
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
     ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->union_list->inflate(dx, dy),

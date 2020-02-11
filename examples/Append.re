@@ -7,7 +7,7 @@ let y = str("y");
 let z = str("z");
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
-    ~nodes=[box(~dx=dxH, ~dy=dyH, [h], []), box(~dx=dxT, ~dy=dyT, [t], [])],
+    ~nodes=[box(~dx=dxH, ~dy=dyH, h, []), box(~dx=dxT, ~dy=dyT, t, [])],
     ~linkRender=(~source, ~target) => <> </>,
     ~gap=0.,
     ~direction=LeftRight,
