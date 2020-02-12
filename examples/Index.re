@@ -41,3 +41,8 @@ ReactDOMRe.render(
   <Visualize3 node=Append.env width=500. height=300. />,
   makeContainer("extended linked list example"),
 );
+
+ReactDOMRe.render(
+  <Visualize3 node=AppendTable.env width=500. height=300. />,
+  makeContainer("append table"),
+);

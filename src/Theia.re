@@ -560,13 +560,11 @@ let table = (~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection) => {
            topleft to bottomright */
         let computeBBox = (i, j, sizeOffset) => {
           let widthSoFar = List.nth(cumulativeWidth, j);
-          let width = List.nth(maxWidthPerCol, j);
           let heightSoFar = List.nth(cumulativeHeight, i);
-          let height = List.nth(maxHeightPerRow, i);
           {
             translation: {
-              x: -. sizeOffset->Rectangle.x1 +. widthSoFar +. width /. 2.,
-              y: -. sizeOffset->Rectangle.y1 +. heightSoFar +. height /. 2.,
+              x: -. sizeOffset->Rectangle.x1 +. widthSoFar,
+              y: -. sizeOffset->Rectangle.y1 +. heightSoFar,
             },
             sizeOffset,
           };
