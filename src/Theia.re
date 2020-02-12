@@ -464,3 +464,119 @@ let str = s => {
     Rectangle.fromPointSize(~x=0., ~y=0., ~width, ~height),
   );
 };
+
+let rec product = (l1, l2) =>
+  switch (l1, l2) {
+  | ([], _)
+  | (_, []) => []
+  | ([h1, ...t1], [h2, ...t2]) => [(h1, h2), ...product([h1], t2)] @ product(t1, l2)
+  };
+
+let rec repeat = (n, a) =>
+  if (n == 0) {
+    [];
+  } else {
+    [a, ...repeat(n - 1, a)];
+  };
+
+let makeTableLinks = (linkRender, colLen, rowLen) => {
+  let colIndices = range(0, colLen);
+  let rowIndices = range(0, rowLen);
+  let coords = product(colIndices, rowIndices);
+  let toIndex = (c, r) => c * rowLen + r;
+  let horizontalPairs =
+    List.combine(List.rev(rowIndices) |> List.tl |> List.rev, List.tl(rowIndices))
+    |> repeat(colLen)
+    |> List.mapi((i, ls) => List.map(((l, r)) => (l + i * rowLen, r + i * rowLen), ls));
+  let verticalPairs =
+    List.combine(List.rev(colIndices) |> List.tl |> List.rev, List.tl(colIndices))
+    |> repeat(rowLen)
+    |> List.mapi((i, ls) => List.map(((l, r)) => (l + i, r + i), ls));
+  let allPairs = List.flatten(horizontalPairs @ verticalPairs);
+  List.map(
+    ((source, t)): Link.sourceLocal =>
+      Link.{
+        source: Some(source),
+        target: {
+          ancestorRoot: 0,
+          absPath: [t],
+        },
+        linkRender,
+      },
+    allPairs,
+  );
+};
+
+let rec partitionAux = (acc, n, l) =>
+  if (n == 0) {
+    (List.rev(acc), l);
+  } else {
+    switch (l) {
+    | [] => failwith("ran out of elements to partition")
+    | [h, ...t] => partitionAux([h, ...acc], n - 1, t)
+    };
+  };
+
+let partition = partitionAux([]);
+
+let rec constructMatrix = (l, rowLen) =>
+  switch (l) {
+  | [] => []
+  | l =>
+    let (h, t) = partition(rowLen, l);
+    [h, ...constructMatrix(t, rowLen)];
+  };
+
+/* table. Like a nested hSeq and vSeq except allows layout and rendering to be influenced by all
+   elements of the table */
+/* kind of weird, because rows seem like a natural linkage more than columns, but need to consider
+   them equally. hopefully this doesn't mess with transformations too much */
+/* nodes is a list of rows */
+/* TODO: test! */
+let table = (~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection) => {
+  let colLen = List.length(nodes);
+  let rowLen = List.length(List.nth(nodes, 0));
+  Main.make(
+    ~tags=["table"],
+    ~nodes=List.flatten(nodes),
+    ~links=makeTableLinks(linkRender, colLen, rowLen),
+    ~layout=
+      (ns, _) => {
+        /* reconstruct matrix */
+        let mat = constructMatrix(ns, rowLen);
+
+        /* max height per row */
+        let maxHeightPerRow: list(float) =
+          mat |> List.map(row => row |> List.map(Rectangle.height) |> List.fold_left(max, 0.));
+        let cumulativeHeight = scanl((+.), 0., maxHeightPerRow);
+        /* transpose */
+        let matT = range(0, rowLen) |> List.map(i => List.map(l => List.nth(l, i), mat));
+        /* max width per col */
+        let maxWidthPerCol: list(float) =
+          matT |> List.map(col => col |> List.map(Rectangle.width) |> List.fold_left(max, 0.));
+        let cumulativeWidth = scanl((+.), 0., maxWidthPerCol);
+
+        /* TODO: incorporate gap and direction info. currently assumes gaps are 0 and directions are
+           topleft to bottomright */
+        let computeBBox = (i, j, sizeOffset) => {
+          let widthSoFar = List.nth(cumulativeWidth, j);
+          let width = List.nth(maxWidthPerCol, j);
+          let heightSoFar = List.nth(cumulativeHeight, i);
+          let height = List.nth(maxHeightPerRow, i);
+          {
+            translation: {
+              x: -. sizeOffset->Rectangle.x1 +. widthSoFar +. width /. 2.,
+              y: -. sizeOffset->Rectangle.y1 +. heightSoFar +. height /. 2.,
+            },
+            sizeOffset,
+          };
+        };
+
+        mat
+        |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
+        |> List.flatten;
+      },
+    ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
+    ~render=defaultRender,
+  );
+};
