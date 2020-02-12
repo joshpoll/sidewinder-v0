@@ -5,7 +5,7 @@ let dummyComputeSizeOffset = _ => Rectangle.fromPointSize(~x=0., ~y=0., ~width=0
 
 let dummyRender = (_, _, _) => <> </>;
 
-let linkRender = (~source, ~target) => <> </>;
+let linkRender = None;
 
 let make = (~nodes, ~links) =>
   Main.make(

@@ -8,7 +8,7 @@ let z = str("z");
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
     ~nodes=[box(~dx=dxH, ~dy=dyH, h, []), box(~dx=dxT, ~dy=dyT, t, [])],
-    ~linkRender=(~source, ~target) => <> </>,
+    ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
   );
@@ -27,25 +27,28 @@ let xPtr0 =
           ancestorRoot: 3, /* 0 = xPtr0, 1 = cons-box, 2 = cons-seq, 3 = graph */
           absPath: [1],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.cx)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -92,25 +95,28 @@ let yPtr0 =
           ancestorRoot: 3, /* 0 = yPtr0, 1 = cons-box, 2 = cons-seq, 3 = graph */
           absPath: [1],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.cx)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -136,25 +142,28 @@ let yPtr1 =
           ancestorRoot: 3, /* 0 = yPtr1, 1 = cons-box, 2 = cons-seq, 3 = graph */
           absPath: [2],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.cx)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -202,25 +211,28 @@ let zPtr0 =
           ancestorRoot: 3, /* 0 = zPtr0, 1 = cons-box, 2 = cons-seq, 3 = graph */
           absPath: [1],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.cx)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -248,25 +260,28 @@ let zPtr1 =
 
           absPath: [1 /* yBinding */, 1 /* graph-list */, 0 /* hd */],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.cx)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.cx)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -306,7 +321,7 @@ let zBinding = [z, zList];
 let env =
   table(
     ~nodes=[xBinding, yBinding, zBinding],
-    ~linkRender=(~source, ~target) => <> </>,
+    ~linkRender=None,
     ~xGap=0.,
     ~yGap=0.,
     ~xDirection=LeftRight,

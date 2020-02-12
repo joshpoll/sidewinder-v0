@@ -18,25 +18,28 @@ let b =
           ancestorRoot: 3, /* 0 = b, 1 = b', 2 = e, 3 = g */
           absPath: [1 /* 1, 0 */],
         },
-        linkRender: (~source, ~target) => {
-          <>
-            {if (debug_) {
-               <>
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
-                 {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
-               </>;
-             } else {
-               <> </>;
-             }}
-            <line
-              x1={Js.Float.toString(source->Rectangle.x2)}
-              y1={Js.Float.toString(source->Rectangle.cy)}
-              x2={Js.Float.toString(target->Rectangle.x1)}
-              y2={Js.Float.toString(target->Rectangle.cy)}
-              stroke="purple"
-            />
-          </>;
-        },
+        linkRender:
+          Some(
+            (~source, ~target) => {
+              <>
+                {if (debug_) {
+                   <>
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(source))}
+                     {drawBBox(Sidewinder.Node.sizeOffsetToBBox(target))}
+                   </>;
+                 } else {
+                   <> </>;
+                 }}
+                <line
+                  x1={Js.Float.toString(source->Rectangle.x2)}
+                  y1={Js.Float.toString(source->Rectangle.cy)}
+                  x2={Js.Float.toString(target->Rectangle.x1)}
+                  y2={Js.Float.toString(target->Rectangle.cy)}
+                  stroke="purple"
+                />
+              </>
+            },
+          ),
       },
     ],
     <circle r="2" cx="2" cy="2" />,
@@ -50,16 +53,9 @@ let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., c, []);
 let d = str("/");
 let d' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., d, []);
 
-let e =
-  seq(
-    ~nodes=[a', b'],
-    ~linkRender=(~source: _, ~target: _) => <> </>,
-    ~gap=0.,
-    ~direction=LeftRight,
-  );
+let e = seq(~nodes=[a', b'], ~linkRender=None, ~gap=0., ~direction=LeftRight);
 
-let f =
-  seq(~nodes=[c', d'], ~linkRender=(~source, ~target) => <> </>, ~gap=0., ~direction=LeftRight);
+let f = seq(~nodes=[c', d'], ~linkRender=None, ~gap=0., ~direction=LeftRight);
 
 let g =
   graph(
@@ -73,25 +69,28 @@ let g =
 /**
        * AST Example: https://courses.cs.washington.edu/courses/cse341/19sp/lec5slides.pdf
        */
-let linkRender = (~source, ~target) => {
-  <>
-    {if (debug_) {
-       <>
-         {drawBBox(Node.sizeOffsetToBBox(source))}
-         {drawBBox(Node.sizeOffsetToBBox(target))}
-       </>;
-     } else {
-       <> </>;
-     }}
-    <line
-      x1={Js.Float.toString(source->Rectangle.cx)}
-      y1={Js.Float.toString(source->Rectangle.y2)}
-      x2={Js.Float.toString(target->Rectangle.cx)}
-      y2={Js.Float.toString(target->Rectangle.y1)}
-      stroke="black"
-    />
-  </>;
-};
+let linkRender =
+  Some(
+    (~source, ~target) => {
+      <>
+        {if (debug_) {
+           <>
+             {drawBBox(Node.sizeOffsetToBBox(source))}
+             {drawBBox(Node.sizeOffsetToBBox(target))}
+           </>;
+         } else {
+           <> </>;
+         }}
+        <line
+          x1={Js.Float.toString(source->Rectangle.cx)}
+          y1={Js.Float.toString(source->Rectangle.y2)}
+          x2={Js.Float.toString(target->Rectangle.cx)}
+          y2={Js.Float.toString(target->Rectangle.y1)}
+          stroke="black"
+        />
+      </>
+    },
+  );
 
 let ast0 = str("Add");
 let ast1 = str("Constant");

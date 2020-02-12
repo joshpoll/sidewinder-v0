@@ -6,12 +6,17 @@ type node = {
 };
 
 let renderLink = (node: Layout.node, Link.{source, target, linkRender}: Link.lca): React.element => {
-  let sourceNode = Layout.resolveAbsPath(node, source);
-  let targetNode = Layout.resolveAbsPath(node, target);
-  linkRender(
-    ~source=Node.bboxToSizeOffset(sourceNode.bbox),
-    ~target=Node.bboxToSizeOffset(targetNode.bbox),
-  );
+  switch (linkRender) {
+  | None => <> </>
+  | Some(lr) =>
+    /* TODO: would be nice to keep this information around during computeBBoxes */
+    let sourceNode = Layout.resolveAbsPath(node, source);
+    let targetNode = Layout.resolveAbsPath(node, target);
+    lr(
+      ~source=Node.bboxToSizeOffset(sourceNode.bbox),
+      ~target=Node.bboxToSizeOffset(targetNode.bbox),
+    );
+  };
 };
 
 let rec renderLinks = (Layout.{nodes, links, bbox, render} as n): node => {
