@@ -211,9 +211,9 @@ let defaultRender = (nodes, bbox, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~links=[], r, sizeOffset) =>
+let atom = (~links=[], ~tags=[], r, sizeOffset) =>
   Main.make(
-    ~tags=["atom"],
+    ~tags=["atom", ...tags],
     ~nodes=[],
     ~links,
     ~layout=(_, _) => [],
@@ -234,9 +234,9 @@ let atom = (~links=[], r, sizeOffset) =>
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
-let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
+let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render) =>
   Main.make(
-    ~tags=["nest"],
+    ~tags=["nest", ...tags],
     ~nodes,
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -244,7 +244,7 @@ let nest = (~nodes, ~links, ~computeSizeOffset, ~render) =>
     ~render,
   );
 
-let box = (~dx=0., ~dy=0., node, links) => {
+let box = (~tags=[], ~dx=0., ~dy=0., node, links) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
@@ -283,7 +283,7 @@ let box = (~dx=0., ~dy=0., node, links) => {
     </>;
   };
   Main.make(
-    ~tags=["box"],
+    ~tags=["box", ...tags],
     ~nodes=[node],
     ~links,
     ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
@@ -292,9 +292,9 @@ let box = (~dx=0., ~dy=0., node, links) => {
   );
 };
 
-let graph = (~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
+let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
   Main.make(
-    ~tags=["graph"],
+    ~tags=["graph", ...tags],
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
@@ -336,9 +336,9 @@ let makeLinks = (linkRender, i) => {
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
-let seq = (~nodes, ~linkRender, ~gap, ~direction) =>
+let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction) =>
   Main.make(
-    ~tags=["seq"],
+    ~tags=["seq", ...tags],
     ~nodes,
     ~links=makeLinks(linkRender, List.length(nodes)),
     ~layout=
@@ -533,11 +533,11 @@ let rec constructMatrix = (l, rowLen) =>
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: test! */
-let table = (~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection) => {
+let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection) => {
   let colLen = List.length(nodes);
   let rowLen = List.length(List.nth(nodes, 0));
   Main.make(
-    ~tags=["table"],
+    ~tags=["table", ...tags],
     ~nodes=List.flatten(nodes),
     ~links=makeTableLinks(linkRender, colLen, rowLen),
     ~layout=
