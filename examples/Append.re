@@ -7,10 +7,11 @@ let y = str("y");
 let z = str("z");
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
-    ~nodes=[box(~dx=dxH, ~dy=dyH, h, []), box(~dx=dxT, ~dy=dyT, t, [])],
+    ~nodes=[box(~dx=dxH, ~dy=dyH, h, [], ()), box(~dx=dxT, ~dy=dyT, t, [], ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
+    (),
   );
 };
 
@@ -53,6 +54,7 @@ let xPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let xList0 =
   cons(
@@ -81,6 +83,7 @@ let xList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 let xBinding =
@@ -99,6 +102,7 @@ let xBinding =
       ),
     ~gap=30.,
     ~direction=LeftRight,
+    (),
   );
 
 let yPtr0 =
@@ -137,6 +141,7 @@ let yPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let yList0 =
   cons(
@@ -184,6 +189,7 @@ let yPtr1 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 
 let yList1 =
@@ -213,6 +219,7 @@ let yList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 let yBinding =
@@ -231,6 +238,7 @@ let yBinding =
       ),
     ~gap=30.,
     ~direction=LeftRight,
+    (),
   );
 
 let zPtr0 =
@@ -269,6 +277,7 @@ let zPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let zList0 =
   cons(
@@ -318,6 +327,7 @@ let zPtr1 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 
 let zList1 =
@@ -337,6 +347,7 @@ let zList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 let zBinding =
@@ -355,7 +366,8 @@ let zBinding =
       ),
     ~gap=30.,
     ~direction=LeftRight,
+    (),
   );
 
 let env =
-  seq(~nodes=[xBinding, yBinding, zBinding], ~linkRender=None, ~gap=20., ~direction=UpDown);
+  seq(~nodes=[xBinding, yBinding, zBinding], ~linkRender=None, ~gap=20., ~direction=UpDown, ());

@@ -211,7 +211,7 @@ let defaultRender = (nodes, bbox, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~links=[], ~tags=[], r, sizeOffset) =>
+let atom = (~tags=[], ~links=[], r, sizeOffset, ()) =>
   Main.make(
     ~tags=["atom", ...tags],
     ~nodes=[],
@@ -234,7 +234,7 @@ let atom = (~links=[], ~tags=[], r, sizeOffset) =>
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
-let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render) =>
+let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render, ()) =>
   Main.make(
     ~tags=["nest", ...tags],
     ~nodes,
@@ -244,7 +244,7 @@ let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render) =>
     ~render,
   );
 
-let box = (~tags=[], ~dx=0., ~dy=0., node, links) => {
+let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
@@ -292,7 +292,7 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links) => {
   );
 };
 
-let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
+let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
   Main.make(
     ~tags=["graph", ...tags],
     ~nodes,
@@ -336,7 +336,7 @@ let makeLinks = (linkRender, i) => {
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
-let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction) =>
+let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
   Main.make(
     ~tags=["seq", ...tags],
     ~nodes,
@@ -462,6 +462,7 @@ let str = s => {
       {React.string(s)}
     </text>,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width, ~height),
+    (),
   );
 };
 
@@ -533,7 +534,7 @@ let rec constructMatrix = (l, rowLen) =>
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: test! */
-let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection) => {
+let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
   let colLen = List.length(nodes);
   let rowLen = List.length(List.nth(nodes, 0));
   Main.make(

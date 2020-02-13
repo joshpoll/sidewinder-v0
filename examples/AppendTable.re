@@ -7,7 +7,7 @@ let y = str("y");
 let z = str("z");
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
-    ~nodes=[box(~dx=dxH, ~dy=dyH, h, []), box(~dx=dxT, ~dy=dyT, t, [])],
+    ~nodes=[box(~dx=dxH, ~dy=dyH, h, [], ()), box(~dx=dxT, ~dy=dyT, t, [], ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
@@ -53,6 +53,7 @@ let xPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let xList0 =
   cons(
@@ -62,6 +63,7 @@ let xList0 =
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=xPtr0,
+    (),
   );
 
 let xList1 =
@@ -72,6 +74,7 @@ let xList1 =
     ~dxT=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyT=2.5 /. 2.,
     ~t=str("/") /* TODO: maybe do a box with a slash through it instead */,
+    (),
   );
 
 let xList =
@@ -81,6 +84,7 @@ let xList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 let xBinding = [x, xList];
@@ -121,6 +125,7 @@ let yPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let yList0 =
   cons(
@@ -130,6 +135,7 @@ let yList0 =
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=yPtr0,
+    (),
   );
 
 let yPtr1 =
@@ -168,6 +174,7 @@ let yPtr1 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 
 let yList1 =
@@ -178,6 +185,7 @@ let yList1 =
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=yPtr1,
+    (),
   );
 
 let yList2 =
@@ -188,6 +196,7 @@ let yList2 =
     ~dxT=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyT=2.5 /. 2.,
     ~t=str("/") /* TODO: maybe do a box with a slash through it instead */,
+    (),
   );
 
 let yList =
@@ -197,6 +206,7 @@ let yList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 let yBinding = [y, yList];
@@ -237,6 +247,7 @@ let zPtr0 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 let zList0 =
   cons(
@@ -246,6 +257,7 @@ let zList0 =
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=zPtr0,
+    (),
   );
 
 let zPtr1 =
@@ -286,6 +298,7 @@ let zPtr1 =
     ],
     <circle r="2" cx="2" cy="2" />,
     Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+    (),
   );
 
 let zList1 =
@@ -296,6 +309,7 @@ let zList1 =
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=zPtr1,
+    (),
   );
 
 let zList =
@@ -305,6 +319,7 @@ let zList =
     ~gap=25.,
     ~linkDistance=40.,
     ~constraints=directionConstraints(LeftRight),
+    (),
   );
 
 /* (~source, ~target) =>
@@ -326,4 +341,5 @@ let env =
     ~yGap=0.,
     ~xDirection=LeftRight,
     ~yDirection=UpDown,
+    (),
   );
