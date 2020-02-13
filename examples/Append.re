@@ -2,9 +2,9 @@
 open Sidewinder;
 open Theia;
 
-let x = str("x");
-let y = str("y");
-let z = str("z");
+let x = str("x", ());
+let y = str("y", ());
+let z = str("z", ());
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
     ~nodes=[box(~dx=dxH, ~dy=dyH, h, [], ()), box(~dx=dxT, ~dy=dyT, t, [], ())],
@@ -60,7 +60,7 @@ let xList0 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("2"),
+    ~h=str("2", ()),
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=xPtr0,
@@ -70,10 +70,10 @@ let xList1 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("4"),
+    ~h=str("4", ()),
     ~dxT=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyT=2.5 /. 2.,
-    ~t=str("/") /* TODO: maybe do a box with a slash through it instead */,
+    ~t=str("/", ()) /* TODO: maybe do a box with a slash through it instead */,
   );
 
 let xList =
@@ -147,7 +147,7 @@ let yList0 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("5"),
+    ~h=str("5", ()),
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=yPtr0,
@@ -196,7 +196,7 @@ let yList1 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("3"),
+    ~h=str("3", ()),
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=yPtr1,
@@ -206,10 +206,10 @@ let yList2 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("0"),
+    ~h=str("0", ()),
     ~dxT=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyT=2.5 /. 2.,
-    ~t=str("/") /* TODO: maybe do a box with a slash through it instead */,
+    ~t=str("/", ()) /* TODO: maybe do a box with a slash through it instead */,
   );
 
 let yList =
@@ -283,7 +283,7 @@ let zList0 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("2"),
+    ~h=str("2", ()),
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=zPtr0,
@@ -334,7 +334,7 @@ let zList1 =
   cons(
     ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
     ~dyH=2.5 /. 2.,
-    ~h=str("4"),
+    ~h=str("4", ()),
     ~dxT=11. /. 2.,
     ~dyT=11. /. 2.,
     ~t=zPtr1,

@@ -4,7 +4,7 @@
    corner. */
 open Theia;
 
-let a = str("2");
+let a = str("2", ());
 let a' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., a, [], ());
 
 let b =
@@ -48,10 +48,10 @@ let b =
   );
 let b' = box(~dx=11. /. 2., ~dy=11. /. 2., b, [], ());
 
-let c = str("4");
+let c = str("4", ());
 let c' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., c, [], ());
 
-let d = str("/");
+let d = str("/", ());
 let d' = box(~dx=(12.5 -. 9.) /. 2. +. 2.5 /. 2., ~dy=2.5 /. 2., d, [], ());
 
 let e = seq(~nodes=[a', b'], ~linkRender=None, ~gap=0., ~direction=LeftRight, ());
@@ -94,12 +94,12 @@ let linkRender =
     },
   );
 
-let ast0 = str("Add");
-let ast1 = str("Constant");
-let ast2 = str("Negate");
-let ast3 = str("19");
-let ast4 = str("Constant");
-let ast5 = str("4");
+let ast0 = str("Add", ());
+let ast1 = str("Constant", ());
+let ast2 = str("Negate", ());
+let ast3 = str("19", ());
+let ast4 = str("Constant", ());
+let ast5 = str("4", ());
 
 let astExample =
   graph(

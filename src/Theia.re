@@ -444,10 +444,11 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
     ~render=defaultRender,
   );
 
-let str = s => {
+let str = (~tags=[], s, ()) => {
   let width = float_of_int(String.length(s) * 10);
   let height = 12.5;
   atom(
+    ~tags,
     <text
       textAnchor="middle"
       dominantBaseline="middle"
