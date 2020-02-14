@@ -15,6 +15,7 @@ let rec hide = (tag, Kernel.{tags, nodes, links, layout, computeSizeOffset, rend
     );
   };
 
+/* denest everything matching tag in nodes */
 let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
   let (nodes, denestedNodes) = List.map(denestAux(tag), nodes) |> List.split;
   if (List.mem(tag, tags)) {
@@ -54,11 +55,13 @@ let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
   };
 };
 
+/* search for tagBegin to begin denesting. denest everything matching tagDenest in that subtree */
 let rec denest = (tagBegin, tagDenest, Kernel.{tags, nodes} as node) =>
-  if (List.mem(tagDenest, tags)) {
+  if (List.mem(tagBegin, tags)) {
+    let (nodes, rest) = List.map(denestAux(tagDenest), nodes) |> List.split;
     Theia.graph(
       ~tags=["denest"],
-      ~nodes=denestAux(tagDenest, node) |> snd,
+      ~nodes=[{...node, nodes}, ...List.flatten(rest)],
       ~links=[],
       ~gap=25.,
       ~linkDistance=40.,
