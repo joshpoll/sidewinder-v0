@@ -18,6 +18,7 @@ let rec hide = (tag, Kernel.{tags, nodes, links, layout, computeSizeOffset, rend
 /* denest everything matching tag in nodes */
 let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
   let (nodes, denestedNodes) = List.map(denestAux(tag), nodes) |> List.split;
+  let node = {...node, nodes};
   if (List.mem(tag, tags)) {
     (
       /* create pointer */
@@ -48,7 +49,7 @@ let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
         Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
         (),
       ),
-      [{...node, nodes}, ...List.flatten(denestedNodes)],
+      [node, ...List.flatten(denestedNodes)],
     );
   } else {
     (node, List.flatten(denestedNodes));
