@@ -81,10 +81,12 @@
 type tag = string;
 
 type node = {
+  uid: Node.uid,
   tags: list(tag) /* TODO: this is an experiment for writing some transformations. they are   currently erased during LCA. might want to propagate them so rendering can use tags. not sure */,
   nodes: list(node),
-  links: list(Link.global),
-  layout: (list(Node.sizeOffset), list(Link.local)) => list(Node.bbox),
+  links: list(Link.uid),
+  /* TODO: links here shouldn't have rendering */
+  layout: (list(Node.sizeOffset), list(Link.uid)) => list(Node.bbox),
   /* TODO: this should actually compute a *bbox*. That way we can track offsets from the origin that
      the nodes produce. Right now we just assume that the nodes are rendered with bboxes with upper
      left corner at the origin. However things like inflation require recentering. It's much easier

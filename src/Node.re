@@ -1,3 +1,5 @@
+type uid = string; /* globally unique node id used for links */
+type localUID = int; /* locally unique node id used for layout */
 type sizeOffset = Rectangle.t;
 
 type point = {

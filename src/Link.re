@@ -36,6 +36,24 @@ type global = {
   linkRender,
 };
 
+type uid = {
+  source: Node.uid,
+  target: Node.uid,
+  linkRender,
+};
+
+type localUID = {
+  source: Node.localUID,
+  target: Node.localUID,
+  linkRender,
+};
+
+type pathID = {
+  source: Path.path,
+  target: Path.path,
+  linkRender,
+};
+
 let lcaToLocal = ({source: [s, ..._], target: [t, ..._], linkRender}: lca): local => {
   source: s,
   target: t,

@@ -41,7 +41,7 @@ describe("LCA", () => {
 
   Expect.(
     test("bubbles one level in small example", () =>
-      expect(d |> Sidewinder.LCA.propagateLCA) |> toEqual(d')
+      expect(d |> Sidewinder.LCA.fromKernel) |> toEqual(d')
     )
   );
 });

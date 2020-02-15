@@ -9,3 +9,5 @@ type relPath = {
   ancestorRoot: int,
   absPath,
 };
+
+type path = list(Node.uid);
