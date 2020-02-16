@@ -3,7 +3,7 @@ type node = {
   uid: Node.uid,
   nodes: list(node),
   links: list(Link.uid),
-  layout: (list(Node.sizeOffset), list(Link.uid)) => list(Node.bbox),
+  layout: (Belt.Map.String.t(int), list(Node.sizeOffset), list(Link.uid)) => list(Node.bbox),
   computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };

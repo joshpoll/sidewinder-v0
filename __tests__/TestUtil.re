@@ -1,4 +1,4 @@
-let dummyLayout = (_, _) => [];
+let dummyLayout = (_, _, _) => [];
 let dummyComputeSizeOffset = _ => Rectangle.fromPointSize(~x=0., ~y=0., ~width=0., ~height=0.);
 
 let dummyRender = (_, _, _) => <> </>;

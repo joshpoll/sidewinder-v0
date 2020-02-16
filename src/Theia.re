@@ -105,9 +105,16 @@ let drawBBox = (~stroke="red", bbox) => {
     />
   );
 };
-
+module MS = Belt.Map.String;
 let graphLayout =
-    (~constraints, ~gap, ~linkDistance, nodeSizeOffsets, links: list(Sidewinder.Link.uid)) => {
+    (
+      ~constraints,
+      ~gap,
+      ~linkDistance,
+      uidMap,
+      nodeSizeOffsets,
+      links: list(Sidewinder.Link.uid),
+    ) => {
   let nodes =
     List.map(
       sizeOffset =>
@@ -122,7 +129,11 @@ let graphLayout =
   let links =
     List.map(
       (Link.{source, target}: Link.uid) =>
-        WebCoLa.{source: NN(source), target: NN(target), length: None},
+        WebCoLa.{
+          source: NN(uidMap->MS.getExn(source)),
+          target: NN(uidMap->MS.getExn(target)),
+          length: None,
+        },
       links,
     )
     |> Array.of_list;
@@ -217,7 +228,7 @@ let atom = (~tags=[], ~links=[], r, sizeOffset, ()) =>
     ~tags=["atom", ...tags],
     ~nodes=[],
     ~links,
-    ~layout=(_, _) => [],
+    ~layout=(_, _, _) => [],
     ~computeSizeOffset=_ => sizeOffset,
     ~render=
       (_, bbox, _) =>
@@ -240,7 +251,7 @@ let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render, ()) =>
     ~tags=["nest", ...tags],
     ~nodes,
     ~links,
-    ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
+    ~layout=(_, sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
     ~computeSizeOffset,
     ~render,
   );
@@ -287,7 +298,7 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
     ~tags=["box", ...tags],
     ~nodes=[node],
     ~links,
-    ~layout=(sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
+    ~layout=(_, sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
     ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->union_list->inflate(dx, dy),
     ~render,
   );
@@ -330,7 +341,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
     ~nodes,
     ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
     ~layout=
-      ([n, ...rest] as ns, _) => {
+      (_, [n, ...rest] as ns, _) => {
         Js.log2("seq ns sizes", ns |> Array.of_list);
         /* LR
             {w0, h0}
@@ -519,7 +530,7 @@ let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirecti
     ~nodes=List.flatten(nodes),
     ~links=makeTableLinks(linkRender, List.map(List.map((Kernel.{uid}) => uid), nodes)),
     ~layout=
-      (ns, _) => {
+      (_, ns, _) => {
         /* reconstruct matrix */
         let mat = constructMatrix(ns, rowLen);
 
