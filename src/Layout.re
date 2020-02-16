@@ -1,6 +1,7 @@
 type node = {
+  uid: Node.uid,
   nodes: list(node),
-  links: list(Link.lca),
+  links: list(Link.uid),
   bbox: Node.bbox,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
@@ -38,19 +39,16 @@ let rec resolveAbsPath = (node, absPath) =>
 /**
  *  computes the bboxes of the child nodes of the input node
  */
-let rec computeBBoxes = ({nodes, links, layout, computeSizeOffset, render}: LCA.node): node => {
+let rec computeBBoxes = ({uid, nodes, links, layout, computeSizeOffset, render}: LCA.node): node => {
   let bboxSizeOffsets = List.map(computeBBoxes, nodes);
-  let nodeBBoxes =
-    layout(
-      bboxSizeOffsets |> List.map(n => n.bbox.sizeOffset),
-      links |> List.map(Link.lcaToLocal),
-    );
+  let nodeBBoxes = layout(bboxSizeOffsets |> List.map(n => n.bbox.sizeOffset), links);
   let sizeOffset = computeSizeOffset(nodeBBoxes);
   if (List.length(bboxSizeOffsets) == List.length(nodeBBoxes)) {
     Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
     let nodes =
       List.combine(bboxSizeOffsets, nodeBBoxes) |> List.map(((n, bbox)) => {...n, bbox});
     {
+      uid,
       nodes,
       links,
       bbox: {
