@@ -6,7 +6,10 @@ describe("hide", () => {
     test("hides by tag in a sequence", () => {
       expect(
         Theia.seq(
-          ~nodes=[Theia.str(~tags=["foo"], "", ()), Theia.str(~tags=["bar"], "", ())],
+          ~nodes=[
+            make(~tags=["foo"], ~nodes=[], ~links=[]),
+            make(~tags=["bar"], ~nodes=[], ~links=[]),
+          ],
           ~linkRender=None,
           ~gap=0.,
           ~direction=LeftRight,
@@ -17,7 +20,7 @@ describe("hide", () => {
       |> toEqual(
            Some(
              Theia.seq(
-               ~nodes=[Theia.str(~tags=["bar"], "", ())],
+               ~nodes=[make(~tags=["bar"], ~nodes=[], ~links=[])],
                ~linkRender=None,
                ~gap=0.,
                ~direction=LeftRight,

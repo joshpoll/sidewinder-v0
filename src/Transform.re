@@ -1,21 +1,70 @@
-let rec hide = (tag, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
+let rec hideNodes = (tag, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
   if (List.mem(tag, tags)) {
-    None;
+    (None, [uid]);
   } else {
-    Some(
-      Kernel.{
-        uid,
-        tags,
-        nodes:
-          List.map(hide(tag), nodes) |> List.filter(x => x != None) |> List.map((Some(x)) => x),
-        links, /* TODO: remove associated links, too */
-        layout,
-        computeSizeOffset,
-        render,
-      },
+    let (nodes, uids) = List.map(hideNodes(tag), nodes) |> List.split;
+    (
+      Some(
+        Kernel.{
+          uid,
+          tags,
+          nodes: nodes |> List.filter(Belt.Option.isSome) |> List.map(Belt.Option.getExn),
+          links,
+          layout,
+          computeSizeOffset,
+          render,
+        },
+      ),
+      List.flatten(uids),
     );
   };
 
+let rec hideLinks =
+        (hiddenUIDs, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
+  Kernel.{
+    uid,
+    tags,
+    nodes: List.map(hideLinks(hiddenUIDs), nodes),
+    links:
+      List.filter(
+        ({source, target}: Link.uid) =>
+          !List.mem(source, hiddenUIDs) && !List.mem(target, hiddenUIDs),
+        links,
+      ),
+    layout,
+    computeSizeOffset,
+    render,
+  };
+
+let hide = (tag, n) => {
+  let (node, uids) = hideNodes(tag, n);
+  /* TODO: monad! */
+  switch (node) {
+  | None => None
+  | Some(node) => Some(hideLinks(uids, node))
+  };
+};
+
+/* let rec hide = (tag, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
+    if (List.mem(tag, tags)) {
+      None;
+    } else {
+      Some(
+        Kernel.{
+          uid,
+          tags,
+          nodes:
+            List.map(hide(tag), nodes)
+            |> List.filter(Belt.Option.isSome)
+            |> List.map(Belt.Option.getExn),
+          links, /* TODO: remove associated links, too */
+          layout,
+          computeSizeOffset,
+          render,
+        },
+      );
+    };
+   */
 /* denest everything matching tag in nodes */
 let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
   let (nodes, denestedNodes) = List.map(denestAux(tag), nodes) |> List.split;
