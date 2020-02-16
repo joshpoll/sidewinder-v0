@@ -1,9 +1,10 @@
-let rec hide = (tag, Kernel.{tags, nodes, links, layout, computeSizeOffset, render}) =>
+let rec hide = (tag, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
   if (List.mem(tag, tags)) {
     None;
   } else {
     Some(
       Kernel.{
+        uid,
         tags,
         nodes:
           List.map(hide(tag), nodes) |> List.filter(x => x != None) |> List.map((Some(x)) => x),
@@ -26,11 +27,8 @@ let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
         ~tags=["denest ptr"],
         ~links=[
           Link.{
-            source: None,
-            target: {
-              ancestorRoot: 2, /* TODO: this shouldn't be hard coded. it depends on some other properties */
-              absPath: [0] /* TODO: would be a lot easier to use global/local unique ids */,
-            },
+            source: string_of_int(Main.counter^),
+            target: node.uid,
             linkRender:
               Some(
                 (~source, ~target) => {

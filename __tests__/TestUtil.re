@@ -15,8 +15,16 @@ let make = (~tags, ~nodes, ~links) =>
     ~render=dummyRender,
   );
 
+let counter = ref(0);
+
+let readAndUpdateCounter = () => {
+  counter := counter^ + 1;
+  counter^ - 1;
+};
+
 let makeLCA = (~nodes, ~links) =>
   LCA.{
+    uid: string_of_int(readAndUpdateCounter()),
     nodes,
     links,
     layout: dummyLayout,

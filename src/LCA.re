@@ -88,8 +88,10 @@ let computePathMap = n => computePathMapAux([], n)->MS.map(List.rev);
 /* [c], [b, a], [b] => [b, c], [a], [] */
 /* [b, c], [a], [] => (a, b) */
 
-let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) =>
+let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) => {
   switch (p1, p2) {
+  | ([], [h2]) => (lca, h2, lca)
+  | ([h1], []) => (h1, lca, lca)
   | ([h1], [h2]) => (h1, h2, lca)
   | ([h1, ...t1], [h2, ...t2]) =>
     if (h1 == h2) {
@@ -99,6 +101,7 @@ let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) =>
     }
   | _ => raise(failwith("No LCA found")) /* TODO: improve this error */
   };
+};
 
 let computeLocalUID = (p1, p2) =>
   switch (p1, p2) {
@@ -120,7 +123,7 @@ let rec computeLocalLinksAux = (uidToPath, {nodes, links}): MS.t(list(Link.uid))
       (mp, (link, ancestor)) =>
         mp->MS.update(ancestor, l => {
           switch (l) {
-          | None => Some([])
+          | None => Some([link])
           | Some(l) => Some([link, ...l])
           }
         }),
@@ -137,7 +140,7 @@ let rec placeLinks = (localLinks, {uid, nodes, links: _, layout, computeSizeOffs
   {
     uid,
     nodes: List.map(placeLinks(localLinks), nodes),
-    links: localLinks->MS.getExn(uid),
+    links: localLinks->MS.getWithDefault(uid, []),
     layout,
     computeSizeOffset,
     render,

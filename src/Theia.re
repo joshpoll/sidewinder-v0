@@ -106,7 +106,8 @@ let drawBBox = (~stroke="red", bbox) => {
   );
 };
 
-let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizeOffsets, links) => {
+let graphLayout =
+    (~constraints, ~gap, ~linkDistance, nodeSizeOffsets, links: list(Sidewinder.Link.uid)) => {
   let nodes =
     List.map(
       sizeOffset =>
@@ -120,7 +121,7 @@ let graphLayout = (~constraints, ~gap, ~linkDistance, nodeSizeOffsets, links) =>
     |> Array.of_list;
   let links =
     List.map(
-      (Link.{source, target}: Link.local) =>
+      (Link.{source, target}: Link.uid) =>
         WebCoLa.{source: NN(source), target: NN(target), length: None},
       links,
     )
@@ -314,22 +315,9 @@ let rec range = (start: int, end_: int) =>
     [start, ...range(start + 1, end_)];
   };
 
-let makeLinks = (linkRender, i) => {
-  let nodeIndices = range(0, i);
-  let stPairs =
-    List.combine(List.rev(nodeIndices) |> List.tl |> List.rev, List.tl(nodeIndices));
-  List.map(
-    ((source, t)): Link.sourceLocal =>
-      Link.{
-        source: Some(source),
-        target: {
-          ancestorRoot: 0,
-          absPath: [t],
-        },
-        linkRender,
-      },
-    stPairs,
-  );
+let makeLinks = (linkRender, uids) => {
+  let stPairs = List.combine(List.rev(uids) |> List.tl |> List.rev, List.tl(uids));
+  List.map(((source, target)): Link.uid => Link.{source, target, linkRender}, stPairs);
 };
 
 /* NOTE: gap is between neighboring sides of bounding boxes */
@@ -340,7 +328,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
   Main.make(
     ~tags=["seq", ...tags],
     ~nodes,
-    ~links=makeLinks(linkRender, List.length(nodes)),
+    ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
     ~layout=
       ([n, ...rest] as ns, _) => {
         Js.log2("seq ns sizes", ns |> Array.of_list);
@@ -481,32 +469,20 @@ let rec repeat = (n, a) =>
     [a, ...repeat(n - 1, a)];
   };
 
-let makeTableLinks = (linkRender, colLen, rowLen) => {
-  let colIndices = range(0, colLen);
-  let rowIndices = range(0, rowLen);
-  let coords = product(colIndices, rowIndices);
-  let toIndex = (c, r) => c * rowLen + r;
-  let horizontalPairs =
-    List.combine(List.rev(rowIndices) |> List.tl |> List.rev, List.tl(rowIndices))
-    |> repeat(colLen)
-    |> List.mapi((i, ls) => List.map(((l, r)) => (l + i * rowLen, r + i * rowLen), ls));
-  let verticalPairs =
-    List.combine(List.rev(colIndices) |> List.tl |> List.rev, List.tl(colIndices))
-    |> repeat(rowLen)
-    |> List.mapi((i, ls) => List.map(((l, r)) => (l + i, r + i), ls));
-  let allPairs = List.flatten(horizontalPairs @ verticalPairs);
-  List.map(
-    ((source, t)): Link.sourceLocal =>
-      Link.{
-        source: Some(source),
-        target: {
-          ancestorRoot: 0,
-          absPath: [t],
-        },
-        linkRender,
-      },
-    allPairs,
-  );
+/* http://blog.shaynefletcher.org/2017/08/transpose.html */
+let rec transposeAux = (acc, ls) =>
+  switch (ls) {
+  | []
+  | [[], ..._] => List.rev(acc)
+  | ls => transposeAux([List.map(List.hd, ls), ...acc], List.map(List.tl, ls))
+  };
+
+let transpose = transposeAux([]);
+
+let makeTableLinks = (linkRender, uids) => {
+  let horizontalPairs = List.map(makeLinks(linkRender), uids);
+  let verticalPairs = List.map(makeLinks(linkRender), transpose(uids));
+  List.flatten(horizontalPairs @ verticalPairs);
 };
 
 let rec partitionAux = (acc, n, l) =>
@@ -541,7 +517,7 @@ let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirecti
   Main.make(
     ~tags=["table", ...tags],
     ~nodes=List.flatten(nodes),
-    ~links=makeTableLinks(linkRender, colLen, rowLen),
+    ~links=makeTableLinks(linkRender, List.map(List.map((Kernel.{uid}) => uid), nodes)),
     ~layout=
       (ns, _) => {
         /* reconstruct matrix */

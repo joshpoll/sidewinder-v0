@@ -27,22 +27,22 @@ let makeContainer = text => {
   content;
 };
 
-ReactDOMRe.render(
-  <Visualize3 node=SidewinderExamples.g width=500. height=300. />,
-  makeContainer("linked list"),
-);
+/* ReactDOMRe.render(
+     <Visualize3 node=SidewinderExamples.g width=500. height=300. />,
+     makeContainer("linked list"),
+   );
 
-ReactDOMRe.render(
-  <Visualize3 node=SidewinderExamples.astExample width=500. height=300. />,
-  makeContainer("AST"),
-);
+   ReactDOMRe.render(
+     <Visualize3 node=SidewinderExamples.astExample width=500. height=300. />,
+     makeContainer("AST"),
+   );
 
-ReactDOMRe.render(
-  <Visualize3 node=Append.env width=500. height=300. />,
-  makeContainer("extended linked list example"),
-);
+   ReactDOMRe.render(
+     <Visualize3 node=Append.env width=500. height=300. />,
+     makeContainer("extended linked list example"),
+   );
 
-ReactDOMRe.render(
-  <Visualize3 node=AppendTable.env width=500. height=300. />,
-  makeContainer("append table"),
-);
+   ReactDOMRe.render(
+     <Visualize3 node=AppendTable.env width=500. height=300. />,
+     makeContainer("append table"),
+   ); */

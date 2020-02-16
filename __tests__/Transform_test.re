@@ -53,11 +53,8 @@ describe("denest", () => {
       ~tags=["denest ptr"],
       ~links=[
         Link.{
-          source: None,
-          target: {
-            ancestorRoot: 2, /* TODO: this shouldn't be hard coded. it depends on some other properties */
-            absPath: [0] /* TODO: would be a lot easier to use global/local unique ids */,
-          },
+          source: "0",
+          target: "1",
           linkRender:
             Some(
               (~source, ~target) => {

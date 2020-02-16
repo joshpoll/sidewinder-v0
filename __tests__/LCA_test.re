@@ -16,16 +16,7 @@ describe("LCA", () => {
     make(
       ~tags=[],
       ~nodes=[a],
-      ~links=[
-        Sidewinder.Link.{
-          source: Some(0),
-          target: {
-            ancestorRoot: 1,
-            absPath: [1],
-          },
-          linkRender,
-        },
-      ],
+      ~links=[Sidewinder.Link.{source: "0", target: "2", linkRender}],
     );
   let c = make(~tags=[], ~nodes=[], ~links=[]);
   let d = make(~tags=[], ~nodes=[b, c], ~links=[]);
@@ -34,10 +25,7 @@ describe("LCA", () => {
   let b' = makeLCA(~nodes=[a'], ~links=[]);
   let c' = makeLCA(~nodes=[], ~links=[]);
   let d' =
-    makeLCA(
-      ~nodes=[b', c'],
-      ~links=[Sidewinder.Link.{source: [0, 0], target: [1], linkRender}],
-    );
+    makeLCA(~nodes=[b', c'], ~links=[Sidewinder.Link.{source: "1", target: "3", linkRender}]);
 
   Expect.(
     test("bubbles one level in small example", () =>
