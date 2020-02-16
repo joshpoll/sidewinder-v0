@@ -99,7 +99,11 @@ let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) => {
     } else {
       (h1, h2, lca);
     }
-  | _ => raise(failwith("No LCA found")) /* TODO: improve this error */
+  | _ =>
+    Js.log2("candidate LCA:", lca);
+    Js.log2("p1:", p1);
+    Js.log2("p2:", p2);
+    raise(failwith("No LCA found.")); /* TODO: improve this error */
   };
 };
 

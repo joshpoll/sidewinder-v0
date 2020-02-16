@@ -192,7 +192,7 @@ let graphLayout =
 let defaultRender = (nodes, bbox, links) => {
   <>
     {if (debug_) {
-       Js.log2("default render bbox", bbox);
+       //  Js.log2("default render bbox", bbox);
        drawBBox(
          ~stroke="blue",
          {...bbox, sizeOffset: bbox.sizeOffset->Rectangle.inflate(0.5, 0.5)},
@@ -207,8 +207,8 @@ let defaultRender = (nodes, bbox, links) => {
          <g className="nodes">
            {nodes
             |> List.map((Node.{bbox, rendered}) => {
-                 Js.log2("bbox", bbox);
-                 rendered;
+                 //  Js.log2("bbox", bbox);
+                 rendered
                })
             |> Array.of_list
             |> React.array}
@@ -342,7 +342,6 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
     ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
     ~layout=
       (_, [n, ...rest] as ns, _) => {
-        Js.log2("seq ns sizes", ns |> Array.of_list);
         /* LR
             {w0, h0}
             {w1, h1}
@@ -424,7 +423,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
           | RightLeft => raise(failwith("TODO"))
           };
         let bboxes: list(bbox) = scanl(newBBox, initialBBox, rest);
-        Js.log2("seq boxes", bboxes |> Array.of_list);
+        // Js.log2("seq boxes", bboxes |> Array.of_list);
         // Js.log2("seq union", Rectangle.union_list(bboxes));
         /* Js.log2(
              "seq scanl boxes",
@@ -439,6 +438,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
            ); */
         bboxes;
       },
+    // Js.log2("seq ns sizes", ns |> Array.of_list);
     ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
     ~render=defaultRender,
   );

@@ -45,26 +45,6 @@ let hide = (tag, n) => {
   };
 };
 
-/* let rec hide = (tag, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) =>
-    if (List.mem(tag, tags)) {
-      None;
-    } else {
-      Some(
-        Kernel.{
-          uid,
-          tags,
-          nodes:
-            List.map(hide(tag), nodes)
-            |> List.filter(Belt.Option.isSome)
-            |> List.map(Belt.Option.getExn),
-          links, /* TODO: remove associated links, too */
-          layout,
-          computeSizeOffset,
-          render,
-        },
-      );
-    };
-   */
 /* denest everything matching tag in nodes */
 let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
   let (nodes, denestedNodes) = List.map(denestAux(tag), nodes) |> List.split;
