@@ -50,7 +50,7 @@ let rec computeBBoxes =
     layout(uidMap, bboxSizeOffsets |> List.map(n => n.bbox.sizeOffset), layoutLinks);
   let sizeOffset = computeSizeOffset(nodeBBoxes);
   if (List.length(bboxSizeOffsets) == List.length(nodeBBoxes)) {
-    Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
+    // Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
     let nodes =
       List.combine(bboxSizeOffsets, nodeBBoxes) |> List.map(((n, bbox)) => {...n, bbox});
     {

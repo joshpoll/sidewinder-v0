@@ -46,3 +46,8 @@ let makeContainer = text => {
      <Visualize3 node=AppendTable.env width=500. height=300. />,
      makeContainer("append table"),
    ); */
+
+ReactDOMRe.render(
+  <Visualize3 node=Append.seqTest width=500. height=300. />,
+  makeContainer("append"),
+);

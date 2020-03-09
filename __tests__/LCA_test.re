@@ -39,4 +39,18 @@ describe("LCA", () => {
       |> toEqual(d' |> Sidewinder.LCA.fromKernel |> Sidewinder.LCA.toKernel |> kernelToStructure)
     })
   );
+
+  let seq =
+    make(
+      ~tags=["seq"],
+      ~nodes=[a, c],
+      ~links=[Sidewinder.Link.{source: a.uid, target: c.uid, linkRender}],
+    );
+
+  Expect.(
+    test("sequence stays put", () => {
+      expect(seq |> Sidewinder.LCA.fromKernel |> Sidewinder.LCA.toKernel |> kernelToStructure)
+      |> toEqual(seq |> kernelToStructure)
+    })
+  );
 });

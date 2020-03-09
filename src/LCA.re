@@ -33,13 +33,16 @@ let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
 /* pass 1 */
 /* uid -> path */
 let rec computePathMapAux =
-        (path, Kernel.{uid, nodes, links, layout, computeSizeOffset, render}): MS.t(Path.path) =>
+        (path, Kernel.{uid, nodes, links, layout, computeSizeOffset, render}): MS.t(Path.path) => {
+  let uids = List.map((Kernel.{uid}) => uid, nodes);
   nodes
-  |> List.map(computePathMapAux([uid, ...path]))
+  |> List.combine(_, uids)
+  |> List.map(((n, uid)) => computePathMapAux([uid, ...path], n))
   |> List.fold_left(mapUnion, MS.empty)
   |> MS.set(_, uid, path);
+};
 
-let computePathMap = n => computePathMapAux([], n)->MS.map(List.rev);
+let computePathMap = (n: Kernel.node) => computePathMapAux([n.uid], n)->MS.map(List.rev);
 
 /* TODO: compute LCA from two paths */
 
@@ -66,17 +69,19 @@ let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) => {
     }
   | _ =>
     Js.log2("candidate LCA:", lca);
-    Js.log2("p1:", p1);
-    Js.log2("p2:", p2);
+    Js.log2("p1:", p1 |> Array.of_list);
+    Js.log2("p2:", p2 |> Array.of_list);
     raise(failwith("No LCA found.")); /* TODO: improve this error */
   };
 };
 
-let computeLocalUID = (p1, p2) =>
+let computeLocalUID = (p1, p2) => {
+  Js.log3("LCA of", p1 |> Array.of_list, p2 |> Array.of_list);
   switch (p1, p2) {
   | ([h1, ...t1], [h2, ...t2]) when h1 == h2 => computeLocalUIDAux(h1, t1, t2)
   | _ => raise(failwith("Expected both paths to start at the same root node."))
   };
+};
 
 /* pass 2 */
 /* path -> local links */

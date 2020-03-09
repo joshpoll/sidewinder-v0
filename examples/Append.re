@@ -370,4 +370,32 @@
      );
 
    let env =
-     seq(~nodes=[xBinding, yBinding, zBinding], ~linkRender=None, ~gap=20., ~direction=UpDown, ()); */
+     seq(~nodes=[xBinding, yBinding, zBinding], ~linkRender=None, ~gap=20., ~direction=UpDown, ());
+     */
+
+open Theia;
+
+let x = str("x", ());
+let y = str("y", ());
+let z = str("z", ());
+let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
+  seq(
+    ~nodes=[box(~dx=dxH, ~dy=dyH, h, [], ()), box(~dx=dxT, ~dy=dyT, t, [], ())],
+    ~linkRender=None,
+    ~gap=0.,
+    ~direction=LeftRight,
+    (),
+  );
+};
+
+let xList0 =
+  cons(
+    ~dxH=(12.5 -. 9.) /. 2. +. 2.5 /. 2.,
+    ~dyH=2.5 /. 2.,
+    ~h=str("2", ()),
+    ~dxT=11. /. 2.,
+    ~dyT=11. /. 2.,
+    ~t=str("/", ()),
+  );
+
+let seqTest = seq(~nodes=[x, y], ~linkRender=None, ~gap=0., ~direction=LeftRight, ());
