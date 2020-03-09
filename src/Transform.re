@@ -45,18 +45,34 @@ let hide = (tag, n) => {
   };
 };
 
+let unzip3: list(('a, 'b, 'c)) => (list('a), list('b), list('c)) =
+  l =>
+    List.fold_right(
+      ((a, b, c), (la, lb, lc)) => ([a, ...la], [b, ...lb], [c, ...lc]),
+      l,
+      ([], [], []),
+    );
+
 /* denest everything matching tag in nodes */
 let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
-  let (nodes, denestedNodes) = List.map(denestAux(tag), nodes) |> List.split;
+  let (nodes, denestedNodes, denestingLinks) = List.map(denestAux(tag), nodes) |> unzip3;
   let node = {...node, nodes};
   if (List.mem(tag, tags)) {
-    (
-      /* create pointer */
+    let ptr =
       Theia.atom(
         ~tags=["denest ptr"],
-        ~links=[
+        ~links=[],
+        <circle r="2" cx="2" cy="2" />,
+        Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+        (),
+      );
+    (
+      ptr,
+      [node, ...List.flatten(denestedNodes)],
+      [
+        (
           Link.{
-            source: string_of_int(Main.counter^),
+            source: ptr.uid,
             target: node.uid,
             linkRender:
               Some(
@@ -70,27 +86,24 @@ let rec denestAux = (tag, Kernel.{tags, nodes} as node) => {
                   />
                 },
               ),
-          },
-        ],
-        <circle r="2" cx="2" cy="2" />,
-        Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
-        (),
-      ),
-      [node, ...List.flatten(denestedNodes)],
+          }: Link.uid
+        ),
+        ...List.flatten(denestingLinks),
+      ],
     );
   } else {
-    (node, List.flatten(denestedNodes));
+    (node, List.flatten(denestedNodes), List.flatten(denestingLinks));
   };
 };
 
 /* search for tagBegin to begin denesting. denest everything matching tagDenest in that subtree */
 let rec denest = (tagBegin, tagDenest, Kernel.{tags, nodes} as node) =>
   if (List.mem(tagBegin, tags)) {
-    let (nodes, rest) = List.map(denestAux(tagDenest), nodes) |> List.split;
+    let (nodes, rest, links) = List.map(denestAux(tagDenest), nodes) |> unzip3;
     Theia.graph(
       ~tags=["denest"],
       ~nodes=[{...node, nodes}, ...List.flatten(rest)],
-      ~links=[],
+      ~links=List.flatten(links),
       ~gap=25.,
       ~linkDistance=40.,
       ~constraints=Theia.directionConstraints(LeftRight),

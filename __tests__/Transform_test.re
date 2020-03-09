@@ -6,10 +6,7 @@ describe("hide", () => {
     test("hides by tag in a sequence", () => {
       expect(
         Theia.seq(
-          ~nodes=[
-            make(~tags=["foo"], ~nodes=[], ~links=[]),
-            make(~tags=["bar"], ~nodes=[], ~links=[]),
-          ],
+          ~nodes=[makeAtom(["foo"]), makeAtom(["bar"])],
           ~linkRender=None,
           ~gap=0.,
           ~direction=LeftRight,
@@ -21,7 +18,7 @@ describe("hide", () => {
       )
       |> toEqual(
            Theia.seq(
-             ~nodes=[make(~tags=["bar"], ~nodes=[], ~links=[])],
+             ~nodes=[makeAtom(["bar"])],
              ~linkRender=None,
              ~gap=0.,
              ~direction=LeftRight,
@@ -39,15 +36,8 @@ describe("denest", () => {
     make(
       ~tags=["cons"],
       ~nodes=[
-        make(~tags=["2"], ~nodes=[], ~links=[]),
-        make(
-          ~tags=["cons"],
-          ~nodes=[
-            make(~tags=["4"], ~nodes=[], ~links=[]),
-            make(~tags=["/"], ~nodes=[], ~links=[]),
-          ],
-          ~links=[],
-        ),
+        makeAtom(["2"]),
+        make(~tags=["cons"], ~nodes=[makeAtom(["4"]), makeAtom(["/"])], ~links=[]),
       ],
       ~links=[],
     );
@@ -55,10 +45,21 @@ describe("denest", () => {
   let ptr =
     Theia.atom(
       ~tags=["denest ptr"],
+      ~links=[],
+      <circle r="2" cx="2" cy="2" />,
+      Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
+      (),
+    );
+
+  let denestL = {
+    let tgtNode = make(~tags=["cons"], ~nodes=[makeAtom(["4"]), makeAtom(["/"])], ~links=[]);
+    Theia.graph(
+      ~tags=["denest"],
+      ~nodes=[make(~tags=["cons"], ~nodes=[makeAtom(["2"]), ptr], ~links=[]), tgtNode],
       ~links=[
         Link.{
-          source: "0",
-          target: "1",
+          source: ptr.uid,
+          target: tgtNode.uid,
           linkRender:
             Some(
               (~source, ~target) => {
@@ -73,40 +74,17 @@ describe("denest", () => {
             ),
         },
       ],
-      <circle r="2" cx="2" cy="2" />,
-      Rectangle.fromPointSize(~x=0., ~y=0., ~width=4., ~height=4.),
-      (),
-    );
-
-  let denestL =
-    Theia.graph(
-      ~tags=["denest"],
-      ~nodes=[
-        make(
-          ~tags=["cons"],
-          ~nodes=[make(~tags=["2"], ~nodes=[], ~links=[]), ptr],
-          ~links=[],
-        ),
-        make(
-          ~tags=["cons"],
-          ~nodes=[
-            make(~tags=["4"], ~nodes=[], ~links=[]),
-            make(~tags=["/"], ~nodes=[], ~links=[]),
-          ],
-          ~links=[],
-        ),
-      ],
-      ~links=[],
       ~gap=25.,
       ~linkDistance=40.,
       ~constraints=Theia.directionConstraints(LeftRight),
       (),
     );
+  };
 
   Expect.(
-    test("denest linear cons structure", () => {
+    test("denest linear cons structure", () =>
       expect(l |> Transform.denest("cons", "cons") |> kernelToStructure)
       |> toEqual(denestL |> kernelToStructure)
-    })
+    )
   );
 });
