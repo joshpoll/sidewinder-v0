@@ -76,7 +76,7 @@ let rec computeLocalUIDAux = (lca: Node.uid, p1, p2) => {
 };
 
 let computeLocalUID = (p1, p2) => {
-  Js.log3("LCA of", p1 |> Array.of_list, p2 |> Array.of_list);
+  // Js.log3("LCA of", p1 |> Array.of_list, p2 |> Array.of_list);
   switch (p1, p2) {
   | ([h1, ...t1], [h2, ...t2]) when h1 == h2 => computeLocalUIDAux(h1, t1, t2)
   | _ => raise(failwith("Expected both paths to start at the same root node."))
