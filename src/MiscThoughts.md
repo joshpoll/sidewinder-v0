@@ -13,4 +13,10 @@ up a level.
 
 TODO: check out https://stackoverflow.com/a/43892905 for resolving React key warning.
 
-TODO: if a target node doesn't exist, because its path is above the root node, then canonicalization seems to remove it?!? That's really cool.
+TODO: if a target node doesn't exist, because its path is above the root node, then canonicalization
+seems to remove it?!? That's really cool.
+
+TODO: global positioning of elements could be an optimization pass. merge multiple graphs together
+then hide pieces in each state. that way there is always room for future pieces.
+
+TODO: check out how Penrose computes label size

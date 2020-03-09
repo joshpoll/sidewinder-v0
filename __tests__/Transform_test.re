@@ -15,18 +15,19 @@ describe("hide", () => {
           ~direction=LeftRight,
           (),
         )
-        |> Transform.hide("foo"),
+        |> Transform.hide("foo")
+        |> Belt.Option.getExn
+        |> kernelToStructure,
       )
       |> toEqual(
-           Some(
-             Theia.seq(
-               ~nodes=[make(~tags=["bar"], ~nodes=[], ~links=[])],
-               ~linkRender=None,
-               ~gap=0.,
-               ~direction=LeftRight,
-               (),
-             ),
-           ),
+           Theia.seq(
+             ~nodes=[make(~tags=["bar"], ~nodes=[], ~links=[])],
+             ~linkRender=None,
+             ~gap=0.,
+             ~direction=LeftRight,
+             (),
+           )
+           |> kernelToStructure,
          )
     })
   )
@@ -104,7 +105,8 @@ describe("denest", () => {
 
   Expect.(
     test("denest linear cons structure", () => {
-      expect(l |> Transform.denest("cons", "cons")) |> toEqual(denestL)
+      expect(l |> Transform.denest("cons", "cons") |> kernelToStructure)
+      |> toEqual(denestL |> kernelToStructure)
     })
   );
 });

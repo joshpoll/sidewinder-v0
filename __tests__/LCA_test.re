@@ -29,7 +29,7 @@ describe("LCA", () => {
 
   Expect.(
     test("bubbles one level in small example", () =>
-      expect(d |> Sidewinder.LCA.fromKernel) |> toEqual(d')
+      expect(d |> Sidewinder.LCA.fromKernel |> lcaToStructure) |> toEqual(d' |> lcaToStructure)
     )
   );
 });
