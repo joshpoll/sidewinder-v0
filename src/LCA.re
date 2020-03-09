@@ -1,40 +1,27 @@
 /* Least Common Ancestor algorithm. */
+/*
+
+ - input: a kernel node with links in arbitrary locations in the graph
+ - output: a kernel node with links at the LCA of their source and target
+
+ - pass 1 (compute paths): build a map from uid to path from root
+ - pass 2 (locate links): build a map from LCA path to links
+ - pass 3 (place links): place links
+
+ eventually passes 2 and 3 could be combined
+
+  */
+
 type node = {
   uid: Node.uid,
+  tags: list(Kernel.tag),
   nodes: list(node),
-  links: list(Link.uid),
-  layout: (Belt.Map.String.t(int), list(Node.sizeOffset), list(Link.uid)) => list(Node.bbox),
+  renderingLinks: list(Link.uid),
+  layoutLinks: list(Link.layout),
+  layout:
+    (Belt.Map.String.t(int), list(Node.sizeOffset), list(Link.layout)) => list(Node.bbox),
   computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
-};
-
-/* TODO: test this algorithm!!! */
-/* NOTE: The algorithm assumes that links are specified canonically. That is, the path doesn't go up
-   the hierarchy only to go back down the way it came. */
-/* NOTE: This implementation floats nonlocal links to their LCAs. */
-
-/* NOTE: Don't need to check source node because of link type restriction. */
-let isLCALink = ({source, target}: Link.global) =>
-  source.ancestorRoot == 0 && target.ancestorRoot == 0;
-
-let lcaToGlobal = ({source, target, linkRender}: Link.lca): Link.global => {
-  source: {
-    ancestorRoot: 0,
-    absPath: source,
-  },
-  target: {
-    ancestorRoot: 0,
-    absPath: target,
-  },
-  linkRender,
-};
-
-let globalToLCA =
-    ({source: {absPath: apSource}, target: {absPath: apTarget}, linkRender}: Link.global)
-    : Link.lca => {
-  source: apSource,
-  target: apTarget,
-  linkRender,
 };
 
 module MS = Belt.Map.String;
@@ -43,32 +30,10 @@ let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
   MS.reduce(m2, m1, (m, k, v) => m->MS.set(k, v));
 };
 
-/* let rec addPathsAux =
-           (path, {uid, nodes, links, layout, computeSizeOffset, render}: Kernel.node): node => {
-     {
-       uid,
-       path,
-       nodes: List.map(addPathsAux([uid, ...path]), nodes),
-       links,
-       layout,
-       computeSizeOffset,
-       render,
-     };
-   };
-
-   let addPaths = addPathsAux([]); */
-
-let rec kernelToLCA = ({uid, nodes, links, layout, computeSizeOffset, render}: Kernel.node) => {
-  uid,
-  nodes: List.map(kernelToLCA, nodes),
-  links,
-  layout,
-  computeSizeOffset,
-  render,
-};
-
+/* pass 1 */
+/* uid -> path */
 let rec computePathMapAux =
-        (path, {uid, nodes, links, layout, computeSizeOffset, render}): MS.t(Path.path) =>
+        (path, Kernel.{uid, nodes, links, layout, computeSizeOffset, render}): MS.t(Path.path) =>
   nodes
   |> List.map(computePathMapAux([uid, ...path]))
   |> List.fold_left(mapUnion, MS.empty)
@@ -113,68 +78,65 @@ let computeLocalUID = (p1, p2) =>
   | _ => raise(failwith("Expected both paths to start at the same root node."))
   };
 
+/* pass 2 */
+/* path -> local links */
 /* TODO: construct a map from uid to a list of links that belong to that uid */
-let rec computeLocalLinksAux = (uidToPath, {nodes, links}): MS.t(list(Link.uid)) => {
+let rec computeLinksMapAux =
+        (uidToPath, Kernel.{nodes, links}): MS.t(list((Link.uid, Link.layout))) => {
   let localLinks =
     links
-    |> List.map((Link.{source, target}: Link.uid) => {
+    |> List.map((Link.{source, target} as renderingLink: Link.uid) => {
          let (localSrc, localTarget, ancestor) =
            computeLocalUID(uidToPath->MS.getExn(source), uidToPath->MS.getExn(target));
-         (Link.{source: localSrc, target: localTarget, linkRender: None}: Link.uid, ancestor);
+         ((renderingLink, Link.{source: localSrc, target: localTarget}: Link.layout), ancestor);
        });
   let linksMap =
     List.fold_left(
-      (mp, (link, ancestor)) =>
+      (mp, (links, ancestor)) =>
         mp->MS.update(ancestor, l => {
           switch (l) {
-          | None => Some([link])
-          | Some(l) => Some([link, ...l])
+          | None => Some([links])
+          | Some(l) => Some([links, ...l])
           }
         }),
       MS.empty,
       localLinks,
     );
-  nodes |> List.map(computeLocalLinksAux(uidToPath)) |> List.fold_left(mapUnion, linksMap);
+  nodes |> List.map(computeLinksMapAux(uidToPath)) |> List.fold_left(mapUnion, linksMap);
 };
 
-let computeLocalLinks = n => computeLocalLinksAux(computePathMap(n), n)->MS.map(List.rev);
+let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks = (localLinks, {uid, nodes, links: _, layout, computeSizeOffset, render}) => {
+let rec placeLinks =
+        (localLinks, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) => {
+  let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
+    tags,
     nodes: List.map(placeLinks(localLinks), nodes),
-    links: localLinks->MS.getWithDefault(uid, []),
+    renderingLinks,
+    layoutLinks,
     layout,
     computeSizeOffset,
     render,
   };
 };
 
-let propagateLCA = n => placeLinks(computeLocalLinks(n), n);
+let fromKernel = n => {
+  let uidToPath = computePathMap(n);
+  let pathToLinks = computeLinksMap(uidToPath, n);
+  placeLinks(pathToLinks, n);
+};
 
-let fromKernel = n => n |> kernelToLCA |> propagateLCA;
-
-/*
- /* processes a node and returns a layoutNode and the nonlocal links it bubbles up */
- let rec propagateLCAAux =
-         ({uid, nodes, links, layout, computeSizeOffset, render}: node): (node, list(Link.uid)) => {
-   /* visit nodes first */
-   let (lcaNodes, bubblingLinksList) = List.map(propagateLCAAux, nodes) |> List.split;
-   /* separate LCA links from other global links */
-   let (lcaLinks, globalLinks) =
-     [links, ...bubblingLinksList] |> List.flatten |> List.partition(isLCALink);
-   (
-     {
-       nodes: lcaNodes,
-       links: lcaLinks |> List.map(globalToLCA),
-       layout,
-       computeSizeOffset,
-       render,
-     },
-     globalLinks,
-   );
- };
-
- /* NOTE: Final global links list should be empty! */
- let propagateLCA = n => propagateLCAAux(n) |> fst; */
+let rec toKernel =
+        ({uid, tags, nodes, renderingLinks, layoutLinks: _, layout, computeSizeOffset, render})
+        : Kernel.node => {
+  uid,
+  tags,
+  nodes: List.map(toKernel, nodes),
+  links: renderingLinks,
+  layout,
+  computeSizeOffset,
+  render,
+};

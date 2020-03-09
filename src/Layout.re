@@ -40,11 +40,14 @@ let rec resolveAbsPath = (node, absPath) =>
  *  computes the bboxes of the child nodes of the input node
  */
 module MS = Belt.Map.String;
-let rec computeBBoxes = ({uid, nodes, links, layout, computeSizeOffset, render}: LCA.node): node => {
+let rec computeBBoxes =
+        ({uid, nodes, renderingLinks, layoutLinks, layout, computeSizeOffset, render}: LCA.node)
+        : node => {
   let bboxSizeOffsets = List.map(computeBBoxes, nodes);
   let uids = List.mapi((i, {uid}: LCA.node) => (i, uid), nodes);
   let uidMap = List.fold_left((mp, (i, uid)) => mp->MS.set(uid, i), MS.empty, uids);
-  let nodeBBoxes = layout(uidMap, bboxSizeOffsets |> List.map(n => n.bbox.sizeOffset), links);
+  let nodeBBoxes =
+    layout(uidMap, bboxSizeOffsets |> List.map(n => n.bbox.sizeOffset), layoutLinks);
   let sizeOffset = computeSizeOffset(nodeBBoxes);
   if (List.length(bboxSizeOffsets) == List.length(nodeBBoxes)) {
     Js.log2("nodeBBoxes", nodeBBoxes |> Array.of_list);
@@ -53,7 +56,7 @@ let rec computeBBoxes = ({uid, nodes, links, layout, computeSizeOffset, render}:
     {
       uid,
       nodes,
-      links,
+      links: renderingLinks,
       bbox: {
         translation: {
           x: 0.,

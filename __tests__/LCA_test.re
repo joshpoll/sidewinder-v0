@@ -1,6 +1,8 @@
 open Jest;
 open TestUtil;
 
+/* TODO: to appropriately test this, need to compare layout links as well */
+
 describe("LCA", () => {
   /*
    nesting:
@@ -11,34 +13,30 @@ describe("LCA", () => {
    links:
    a -> c
    */
-  let a = make(~tags=[], ~nodes=[], ~links=[]);
+  let a = make(~tags=["a"], ~nodes=[], ~links=[]);
+  let c = make(~tags=["c"], ~nodes=[], ~links=[]);
   let b =
     make(
-      ~tags=[],
+      ~tags=["b"],
       ~nodes=[a],
-      ~links=[Sidewinder.Link.{source: "0", target: "2", linkRender}],
+      ~links=[Sidewinder.Link.{source: a.uid, target: c.uid, linkRender}],
     );
-  let c = make(~tags=[], ~nodes=[], ~links=[]);
-  let d = make(~tags=[], ~nodes=[b, c], ~links=[]);
+  let d = make(~tags=["d"], ~nodes=[b, c], ~links=[]);
 
-  let a' = makeLCA(~nodes=[], ~links=[]);
-  let b' = makeLCA(~nodes=[a'], ~links=[]);
-  let c' = makeLCA(~nodes=[], ~links=[]);
+  let a' = make(~tags=["a"], ~nodes=[], ~links=[]);
+  let b' = make(~tags=["b"], ~nodes=[a'], ~links=[]);
+  let c' = make(~tags=["c"], ~nodes=[], ~links=[]);
   let d' =
-    makeLCA(~nodes=[b', c'], ~links=[Sidewinder.Link.{source: "1", target: "3", linkRender}]);
+    make(
+      ~tags=["d"],
+      ~nodes=[b', c'],
+      ~links=[Sidewinder.Link.{source: a'.uid, target: c'.uid, linkRender}],
+    );
 
   Expect.(
-    test("bubbles one level in small example", () =>
-      expect(d |> Sidewinder.LCA.fromKernel |> lcaToStructure) |> toEqual(d' |> lcaToStructure)
-    )
+    test("bubbles one level in small example", () => {
+      expect(d |> Sidewinder.LCA.fromKernel |> Sidewinder.LCA.toKernel |> kernelToStructure)
+      |> toEqual(d' |> Sidewinder.LCA.fromKernel |> Sidewinder.LCA.toKernel |> kernelToStructure)
+    })
   );
 });
-
-/* describe("Expect.Operators", () => {
-     open Expect;
-     open! Expect.Operators;
-
-     test("==", () =>
-       expect(1 + 2) === 3
-     );
-   }); */

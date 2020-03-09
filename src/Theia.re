@@ -113,7 +113,7 @@ let graphLayout =
       ~linkDistance,
       uidMap,
       nodeSizeOffsets,
-      links: list(Sidewinder.Link.uid),
+      links: list(Sidewinder.Link.layout),
     ) => {
   let nodes =
     List.map(
@@ -128,7 +128,7 @@ let graphLayout =
     |> Array.of_list;
   let links =
     List.map(
-      (Link.{source, target}: Link.uid) =>
+      (Link.{source, target}: Link.layout) =>
         WebCoLa.{
           source: NN(uidMap->MS.getExn(source)),
           target: NN(uidMap->MS.getExn(target)),

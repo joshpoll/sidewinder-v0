@@ -87,4 +87,18 @@ describe("denest", () => {
       |> toEqual(denestL |> kernelToStructure)
     )
   );
+
+  Expect.(
+    test("original structure is LCA", () =>
+      expect(l |> kernelToStructure)
+      |> toEqual(l |> LCA.fromKernel |> LCA.toKernel |> kernelToStructure)
+    )
+  );
+
+  Expect.(
+    test("denested structure is LCA", () =>
+      expect(denestL |> kernelToStructure)
+      |> toEqual(denestL |> LCA.fromKernel |> LCA.toKernel |> kernelToStructure)
+    )
+  );
 });

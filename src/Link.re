@@ -72,3 +72,8 @@ let sourceLocalToGlobal = ({source, target, linkRender}: sourceLocal): global =>
   target,
   linkRender,
 };
+
+type layout = {
+  source: Node.uid,
+  target: Node.uid,
+};
