@@ -18,8 +18,15 @@ let make = (~tags, ~nodes, ~links, ~layout, ~computeSizeOffset, ~render): Kernel
   render,
 };
 
-let render = (n: Kernel.node) =>
+let render = (~debug=false, n: Kernel.node) =>
   n
+  |> (
+    if (debug) {
+      Debug.transform;
+    } else {
+      x => x;
+    }
+  )
   |> LCA.fromKernel
   |> Layout.computeBBoxes
   |> RenderLinks.renderLinks
