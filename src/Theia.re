@@ -265,6 +265,8 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   let render = (nodes, bbox, links) => {
     <>
       <rect
+        x={Js.Float.toString(bbox->Rectangle.x1)}
+        y={Js.Float.toString(bbox->Rectangle.y1)}
         width={Js.Float.toString(bbox->Rectangle.width)}
         height={Js.Float.toString(bbox->Rectangle.height)}
         fillOpacity="0"
