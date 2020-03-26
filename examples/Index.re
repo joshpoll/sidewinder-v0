@@ -48,7 +48,7 @@ let makeContainer = text => {
    ); */
 
 ReactDOMRe.render(
-  <Visualize3 node=Append.seqTest width=500. height=300. />,
+  <Visualize3 node={Append.seqTest()} width=500. height=300. />,
   makeContainer("append"),
 );
 

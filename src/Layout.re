@@ -1,7 +1,7 @@
 type node = {
   uid: Node.uid,
   nodes: list(node),
-  links: list(Link.uid),
+  links: list(Link.lcaPath),
   transform: Node.transform,
   bbox: Node.bbox,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,

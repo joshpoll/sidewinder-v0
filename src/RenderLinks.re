@@ -12,42 +12,65 @@ let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
   MS.reduce(m2, m1, (m, k, v) => m->MS.set(k, v));
 };
 
-let rec computeGlobalFrameBBoxAux =
-        (pos: Node.transform, Layout.{uid, nodes, links, transform, bbox, render}) => {
-  let newPos: Node.transform =
+let rec computeLCAFrameBBoxAux =
+        (oldTransform: Node.transform, Layout.{uid, nodes, links, transform, bbox, render}) => {
+  let transform: Node.transform =
     Node.{
       translate: {
-        x: pos.translate.x +. transform.translate.x,
-        y: pos.translate.y +. transform.translate.y,
+        x: oldTransform.translate.x +. transform.translate.x,
+        y: oldTransform.translate.y +. transform.translate.y,
       },
       scale: {
-        x: pos.scale.x *. transform.scale.x,
-        y: pos.scale.y *. transform.scale.y,
+        x: oldTransform.scale.x *. transform.scale.x,
+        y: oldTransform.scale.y *. transform.scale.y,
       },
     };
   nodes
-  |> List.map(computeGlobalFrameBBoxAux(newPos))
+  |> List.map(computeLCAFrameBBoxAux(transform))
   |> List.fold_left(mapUnion, MS.empty)
-  |> MS.set(_, uid, bbox->Rectangle.transform(newPos));
+  |> MS.set(_, uid, bbox->Rectangle.transform(transform));
 };
 
-let computeGlobalFrameBBox = computeGlobalFrameBBoxAux(Transform.init);
+let computeGlobalFrameBBox = computeLCAFrameBBoxAux(Transform.init);
 
-let renderLink =
-    (mp: MS.t(Node.bbox), Link.{source, target, linkRender}: Link.uid): React.element => {
+/* let renderLink =
+       (mp: MS.t(Node.bbox), Link.{source, target, linkRender}: Link.uid): React.element => {
+     switch (linkRender) {
+     | None => <> </>
+     | Some(lr) =>
+       /* TODO: would be nice to keep this information ar ound during computeBBoxes */
+       lr(~source=mp->MS.getExn(source), ~target=mp->MS.getExn(target))
+     };
+   };
+
+   let rec renderLinksAux =
+           (mp: MS.t(Node.bbox), Layout.{uid, nodes, links, transform, bbox, render}): node => {
+     let nodes = List.map(renderLinksAux(mp), nodes);
+     let renderedLinks = List.map(renderLink(mp), links);
+     {uid, nodes, links: renderedLinks, transform, bbox, render};
+   };
+    */
+/* let renderLinks = n => renderLinksAux(computeGlobalFrameBBox(n), n); */
+
+let rec computeTransform = (node: Layout.node, path) =>
+  switch (path) {
+  | [] => node.bbox
+  | [h, ...path] =>
+    computeTransform(List.find((Layout.{uid}) => h == uid, node.nodes), path)
+    ->Rectangle.transform(node.transform)
+  };
+
+let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.element =>
   switch (linkRender) {
   | None => <> </>
   | Some(lr) =>
-    /* TODO: would be nice to keep this information ar ound during computeBBoxes */
-    lr(~source=mp->MS.getExn(source), ~target=mp->MS.getExn(target))
+    let source = computeTransform(node, source);
+    let target = computeTransform(node, target);
+    lr(~source, ~target);
   };
-};
 
-let rec renderLinksAux =
-        (mp: MS.t(Node.bbox), Layout.{uid, nodes, links, transform, bbox, render}): node => {
-  let nodes = List.map(renderLinksAux(mp), nodes);
-  let renderedLinks = List.map(renderLink(mp), links);
-  {uid, nodes, links: renderedLinks, transform, bbox, render};
+let rec renderLinks = (Layout.{uid, nodes, links, transform, bbox, render} as n): node => {
+  let nodes = List.map(renderLinks, nodes);
+  let links = List.map(renderLink(n), links);
+  {uid, nodes, links, transform, bbox, render};
 };
-
-let renderLinks = n => renderLinksAux(computeGlobalFrameBBox(n), n);

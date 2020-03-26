@@ -20,3 +20,8 @@ TODO: global positioning of elements could be an optimization pass. merge multip
 then hide pieces in each state. that way there is always room for future pieces.
 
 TODO: check out how Penrose computes label size
+
+
+
+- to compute offsets for LCA links, need the *difference* between the paths.
+- keep local paths at the links

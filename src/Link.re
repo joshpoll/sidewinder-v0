@@ -54,6 +54,20 @@ type pathID = {
   linkRender,
 };
 
+/* lca uid and local paths from that uid to the source and target */
+type lcaPath = {
+  lca: Node.uid,
+  source: Path.path,
+  target: Path.path,
+  linkRender,
+};
+
+let lcaPathToUID = ({source, target, linkRender}: lcaPath): uid => {
+  source: List.nth(source, 0),
+  target: List.nth(target, 0),
+  linkRender,
+};
+
 let lcaToLocal = ({source: [s, ..._], target: [t, ..._], linkRender}: lca): local => {
   source: s,
   target: t,

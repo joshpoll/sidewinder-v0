@@ -375,9 +375,9 @@
 
 open Theia;
 
-let x = str("x", ());
-let y = str("y", ());
-let z = str("z", ());
+let x = str("x");
+let y = str("y");
+let z = str("z");
 let cons = (~dxH, ~dyH, ~h, ~dxT, ~dyT, ~t) => {
   seq(
     ~nodes=[box(~dx=dxH, ~dy=dyH, h, [], ()), box(~dx=dxT, ~dy=dyT, t, [], ())],
@@ -398,9 +398,9 @@ let xList0 =
     ~t=str("/", ()),
   );
 
-let seqTest =
+let seqTest = () =>
   seq(
-    ~nodes=[x, y],
+    ~nodes=[x(), y()],
     ~linkRender=
       Some(
         (~source, ~target) =>
@@ -420,18 +420,18 @@ let seqTest =
             stroke="black"
           />,
       ),
-    ~gap=0.,
+    ~gap=5.,
     ~direction=LeftRight,
     (),
   );
 
-let env = seq(~nodes=[seqTest, z], ~linkRender=None, ~gap=20., ~direction=UpDown, ());
+let env = seq(~nodes=[seqTest(), z()], ~linkRender=None, ~gap=20., ~direction=UpDown, ());
 
 let hSeq = (~gap=0., nodes) => seq(~nodes, ~linkRender=None, ~gap, ~direction=LeftRight, ());
 
 let tableTest =
   table(
-    ~nodes=[[x, y]],
+    ~nodes=[[x(), y()]],
     ~linkRender=
       Some(
         (~source, ~target) =>
@@ -459,4 +459,4 @@ let tableTest =
   );
 
 let seqTableTest = hSeq(~gap=20., [tableTest]);
-let seqSeqTest = hSeq(~gap=20., [seqTest]);
+let seqSeqTest = hSeq(~gap=20., [seqTest(), seqTest()]);

@@ -445,6 +445,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
              Sidewinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
            ); */
         // Js.log2("seq bboxes", bboxes |> Array.of_list);
+        Js.log2("[seq] transforms", transforms |> Array.of_list);
         List.combine(uids, transforms)
         |> List.fold_left((mp, (uid, transform)) => mp->MS.set(uid, transform), MS.empty);
       },
