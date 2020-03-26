@@ -327,7 +327,9 @@ let rec range = (start: int, end_: int) =>
   };
 
 let makeLinks = (linkRender, uids) => {
+  // Js.log2("seq uids", uids |> Array.of_list);
   let stPairs = List.combine(List.rev(uids) |> List.tl |> List.rev, List.tl(uids));
+  // Js.log2("pairs", stPairs |> Array.of_list);
   List.map(((source, target)): Link.uid => Link.{source, target, linkRender}, stPairs);
 };
 
@@ -436,6 +438,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
              "test",
              Sidewinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
            ); */
+        Js.log2("seq bboxes", bboxes |> Array.of_list);
         bboxes;
       },
     // Js.log2("seq ns sizes", ns |> Array.of_list);
@@ -491,8 +494,11 @@ let rec transposeAux = (acc, ls) =>
 let transpose = transposeAux([]);
 
 let makeTableLinks = (linkRender, uids) => {
+  // Js.log2("table uids", uids |> List.map(Array.of_list) |> Array.of_list);
   let horizontalPairs = List.map(makeLinks(linkRender), uids);
+  // Js.log2("hPairs", horizontalPairs |> List.map(Array.of_list) |> Array.of_list);
   let verticalPairs = List.map(makeLinks(linkRender), transpose(uids));
+  // Js.log2("vPairs", verticalPairs |> List.map(Array.of_list) |> Array.of_list);
   List.flatten(horizontalPairs @ verticalPairs);
 };
 
@@ -553,15 +559,18 @@ let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirecti
           {
             translation: {
               x: -. sizeOffset->Rectangle.x1 +. widthSoFar,
-              y: -. sizeOffset->Rectangle.y1 +. heightSoFar,
+              y: -. sizeOffset->Rectangle.y1 -. sizeOffset->Rectangle.height /. 2. +. heightSoFar,
             },
             sizeOffset,
           };
         };
 
-        mat
-        |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
-        |> List.flatten;
+        let bboxes =
+          mat
+          |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
+          |> List.flatten;
+        Js.log2("table bboxes", bboxes |> Array.of_list);
+        bboxes;
       },
     ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
     ~render=defaultRender,

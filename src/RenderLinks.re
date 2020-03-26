@@ -29,6 +29,8 @@ let renderLink =
     /* TODO: would be nice to keep this information ar ound during computeBBoxes */
     let sourceBBox = mp->MS.getExn(source);
     let targetBBox = mp->MS.getExn(target);
+    Js.log2("source y translate", Node.(sourceBBox.translation.y));
+    Js.log2("source y1", Node.bboxToSizeOffset(sourceBBox)->Rectangle.y1);
     lr(~source=Node.bboxToSizeOffset(sourceBBox), ~target=Node.bboxToSizeOffset(targetBBox));
   };
 };
