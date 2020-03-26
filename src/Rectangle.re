@@ -50,11 +50,22 @@ let inflateWidth = ({x1, x2, y1, y2}, dx) => {x1: x1 -. dx, x2: x2 +. dx, y1, y2
 let inflateHeight = ({x1, x2, y1, y2}, dy) => {x1, x2, y1: y1 -. dy, y2: y2 +. dy};
 let inflate = (r, dx, dy) => r->inflateWidth(dx)->inflateHeight(dy);
 
-let translate = ({x1, x2, y1, y2}, dx, dy) => {
-  x1: x1 +. dx,
-  x2: x2 +. dx,
-  y1: y1 +. dy,
-  y2: y2 +. dy,
+let translate = ({x1, x2, y1, y2}, Transform.{x, y}: Transform.translate) => {
+  x1: x1 +. x,
+  x2: x2 +. x,
+  y1: y1 +. y,
+  y2: y2 +. y,
 };
+
+/* https://css-tricks.com/transforms-on-svg-elements/ */
+/* TODO: simplify? */
+let scale = ({x1, x2, y1, y2} as r, Transform.{x, y}: Transform.scale) => {
+  x1: (x1 +. r->width /. 2.) *. x -. r->width /. 2.,
+  x2: (x2 +. r->width /. 2.) *. x -. r->width /. 2.,
+  y1: (y1 +. r->height /. 2.) *. y -. r->height /. 2.,
+  y2: (y2 +. r->height /. 2.) *. y -. r->height /. 2.,
+};
+
+let transform = (r, Transform.{translate: t, scale: s}) => r->translate(t)->scale(s);
 
 let renderable = ({x1, x2, y1, y2}) => x1 <= x2 && y1 <= y2;

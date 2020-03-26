@@ -8,13 +8,13 @@ let readAndUpdateCounter = () => {
 };
 
 /* TODO: may want to restrict inputs to local ids somehow? */
-let make = (~tags, ~nodes, ~links, ~layout, ~computeSizeOffset, ~render): Kernel.node => {
+let make = (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render): Kernel.node => {
   uid: string_of_int(readAndUpdateCounter()),
   tags,
   nodes,
   links,
   layout,
-  computeSizeOffset,
+  computeBBox,
   render,
 };
 

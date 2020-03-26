@@ -78,6 +78,8 @@
 
 /* ------------------------------------------------- */
 
+module MS = Belt.Map.String;
+
 type tag = string;
 
 type node = {
@@ -85,15 +87,18 @@ type node = {
   tags: list(tag) /* TODO: this is an experiment for writing some transformations. they are   currently erased during LCA. might want to propagate them so rendering can use tags. not sure */,
   nodes: list(node),
   links: list(Link.uid),
-  /* TODO: links here shouldn't have rendering */
-  layout:
-    (Belt.Map.String.t(int), list(Node.sizeOffset), list(Link.layout)) => list(Node.bbox),
+  /* takes in a map from uid to bbox and list of layout links. produces the map from uid to
+     transformations applied to each bbox. Each bbox is the position of the component if its
+     rendered. The node can transform its child after it's rendered and this is conveyed through the
+     transform value */
+  layout: (list(Node.uid), MS.t(Node.bbox), list(Link.layout)) => MS.t(Node.transform),
   /* TODO: this should actually compute a *bbox*. That way we can track offsets from the origin that
      the nodes produce. Right now we just assume that the nodes are rendered with bboxes with upper
      left corner at the origin. However things like inflation require recentering. It's much easier
      to track the bbox rather than the size here. */
   /* TODO: maybe not */
-  computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
+  /* takes a list of the bboxes computed by layout (transform applied to each bbox). computes the size of this node */
+  computeBBox: MS.t(Node.bbox) => Node.bbox,
   /* TODO: should this be lca? */
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };

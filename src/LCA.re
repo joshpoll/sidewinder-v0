@@ -12,19 +12,18 @@
 
   */
 
+module MS = Belt.Map.String;
+
 type node = {
   uid: Node.uid,
   tags: list(Kernel.tag),
   nodes: list(node),
   renderingLinks: list(Link.uid),
   layoutLinks: list(Link.layout),
-  layout:
-    (Belt.Map.String.t(int), list(Node.sizeOffset), list(Link.layout)) => list(Node.bbox),
-  computeSizeOffset: list(Node.bbox) => Node.sizeOffset,
+  layout: (list(Node.uid), MS.t(Node.bbox), list(Link.layout)) => MS.t(Node.transform),
+  computeBBox: MS.t(Node.bbox) => Node.bbox,
   render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
 };
-
-module MS = Belt.Map.String;
 
 let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
   MS.reduce(m2, m1, (m, k, v) => m->MS.set(k, v));
@@ -33,7 +32,7 @@ let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
 /* pass 1 */
 /* uid -> path */
 let rec computePathMapAux =
-        (path, Kernel.{uid, nodes, links, layout, computeSizeOffset, render}): MS.t(Path.path) => {
+        (path, Kernel.{uid, nodes, links, layout, computeBBox, render}): MS.t(Path.path) => {
   let uids = List.map((Kernel.{uid}) => uid, nodes);
   nodes
   |> List.combine(_, uids)
@@ -113,8 +112,7 @@ let rec computeLinksMapAux =
 let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks =
-        (localLinks, Kernel.{uid, tags, nodes, links, layout, computeSizeOffset, render}) => {
+let rec placeLinks = (localLinks, Kernel.{uid, tags, nodes, links, layout, computeBBox, render}) => {
   let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
@@ -123,7 +121,7 @@ let rec placeLinks =
     renderingLinks,
     layoutLinks,
     layout,
-    computeSizeOffset,
+    computeBBox,
     render,
   };
 };
@@ -135,13 +133,13 @@ let fromKernel = n => {
 };
 
 let rec toKernel =
-        ({uid, tags, nodes, renderingLinks, layoutLinks: _, layout, computeSizeOffset, render})
+        ({uid, tags, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, render})
         : Kernel.node => {
   uid,
   tags,
   nodes: List.map(toKernel, nodes),
   links: renderingLinks,
   layout,
-  computeSizeOffset,
+  computeBBox,
   render,
 };

@@ -10,8 +10,10 @@ Jest.(
   })
 );
 
-let dummyLayout = (_, _, _) => [];
-let dummyComputeSizeOffset = _ => Rectangle.fromPointSize(~x=0., ~y=0., ~width=0., ~height=0.);
+module MS = Belt.Map.String;
+
+let dummyLayout = (_, _, _) => MS.empty;
+let dummycomputeBBox = _ => Rectangle.fromPointSize(~x=0., ~y=0., ~width=0., ~height=0.);
 
 let dummyRender = (_, _, _) => <> </>;
 
@@ -23,7 +25,7 @@ let make = (~tags, ~nodes, ~links) =>
     ~nodes,
     ~links,
     ~layout=dummyLayout,
-    ~computeSizeOffset=dummyComputeSizeOffset,
+    ~computeBBox=dummycomputeBBox,
     ~render=dummyRender,
   );
 

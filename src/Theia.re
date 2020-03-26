@@ -14,10 +14,35 @@ let rec scanl: (('b, 'a) => 'b, 'b, list('a)) => list('b) =
     );
   };
 
-let translate = ({x, y}, r) =>
-  <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
-    r
-  </g>;
+let computeSVGTransform =
+    ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
+  /* https://css-tricks.com/transforms-on-svg-elements/ */
+  let scale =
+    "translate("
+    ++ Js.Float.toString(bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.)
+    ++ ", "
+    ++ Js.Float.toString(bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.)
+    ++ ")";
+  let scale =
+    scale ++ " " ++ "scale(" ++ Js.Float.toString(sx) ++ ", " ++ Js.Float.toString(sy) ++ ")";
+  let scale =
+    scale
+    ++ " "
+    ++ "translate("
+    ++ Js.Float.toString(-. (bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.))
+    ++ ", "
+    ++ Js.Float.toString(-. (bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.))
+    ++ ")";
+
+  let translate = "translate(" ++ Js.Float.toString(tx) ++ ", " ++ Js.Float.toString(ty) ++ ")";
+
+  scale ++ " " ++ translate;
+};
+
+let svgTransform = (transform, bbox, r) => {
+  let transform = computeSVGTransform(transform, bbox);
+  <g transform> r </g>;
+};
 
 type direction =
   | UpDown
@@ -87,18 +112,12 @@ let directionConstraints = direction =>
     }
   );
 
-let drawBBox = (~stroke="red", bbox) => {
+let drawBBox = (~stroke="red", transform, bbox) => {
   Node.(
     <rect
-      transform={
-        "translate("
-        ++ Js.Float.toString(bbox.sizeOffset->Rectangle.x1 +. bbox.translation.x)
-        ++ ", "
-        ++ Js.Float.toString(bbox.sizeOffset->Rectangle.y1 +. bbox.translation.y)
-        ++ ")"
-      }
-      width={Js.Float.toString(bbox.sizeOffset->Rectangle.width)}
-      height={Js.Float.toString(bbox.sizeOffset->Rectangle.height)}
+      transform={computeSVGTransform(transform, bbox)}
+      width={Js.Float.toString(bbox->Rectangle.width)}
+      height={Js.Float.toString(bbox->Rectangle.height)}
       stroke
       fillOpacity="0"
       /* strokeDasharray="10 5" */
@@ -106,115 +125,100 @@ let drawBBox = (~stroke="red", bbox) => {
   );
 };
 module MS = Belt.Map.String;
-let graphLayout =
-    (
-      ~constraints,
-      ~gap,
-      ~linkDistance,
-      uidMap,
-      nodeSizeOffsets,
-      links: list(Sidewinder.Link.layout),
-    ) => {
-  let nodes =
-    List.map(
-      sizeOffset =>
-        SetCoLa.{
-          width: sizeOffset->Rectangle.width,
-          height: sizeOffset->Rectangle.height,
-          custom: Js.Obj.empty(),
-        },
-      nodeSizeOffsets,
-    )
-    |> Array.of_list;
-  let links =
-    List.map(
-      (Link.{source, target}: Link.layout) =>
-        WebCoLa.{
-          source: NN(uidMap->MS.getExn(source)),
-          target: NN(uidMap->MS.getExn(target)),
-          length: None,
-        },
-      links,
-    )
-    |> Array.of_list;
+/* let graphLayout =
+       (
+         ~constraints,
+         ~gap,
+         ~linkDistance,
+         uidMap,
+         nodeBBox: MS.t(Node.bbox),
+         links: list(Sidewinder.Link.layout),
+       ) => {
+     let nodes =
+       MS.map(nodeBBox, sizeOffset =>
+         SetCoLa.{
+           width: sizeOffset->Rectangle.width,
+           height: sizeOffset->Rectangle.height,
+           custom: Js.Obj.empty(),
+         }
+       );
+     let links =
+       List.map(
+         (Link.{source, target}: Link.layout) =>
+           WebCoLa.{
+             source: NN(uidMap->MS.getExn(source)),
+             target: NN(uidMap->MS.getExn(target)),
+             length: None,
+           },
+         links,
+       )
+       |> Array.of_list;
 
-  let setCoLaGraph =
-    SetCoLa.setCola
-    ->SetCoLa.nodes(nodes)
-    ->SetCoLa.links(links)
-    ->SetCoLa.constraints(constraints);
+     let setCoLaGraph =
+       SetCoLa.setCola
+       ->SetCoLa.nodes(nodes->MS.valuesToArray)
+       ->SetCoLa.links(links)
+       ->SetCoLa.constraints(constraints);
 
-  let setCoLaGraph =
-    switch (gap) {
-    | None => setCoLaGraph
-    | Some(gap) => setCoLaGraph->SetCoLa.gap(gap)
-    };
+     let setCoLaGraph =
+       switch (gap) {
+       | None => setCoLaGraph
+       | Some(gap) => setCoLaGraph->SetCoLa.gap(gap)
+       };
 
-  let setCoLaGraph = setCoLaGraph->SetCoLa.layout;
+     let setCoLaGraph = setCoLaGraph->SetCoLa.layout;
 
-  let colaGraph =
-    WebCoLa.colaLayout()
-    ->WebCoLa.nodes(setCoLaGraph.nodes)
-    ->WebCoLa.links(setCoLaGraph.links)
-    ->WebCoLa.constraints(setCoLaGraph.constraints)
-    ->WebCoLa.avoidOverlaps(true);
+     let colaGraph =
+       WebCoLa.colaLayout()
+       ->WebCoLa.nodes(setCoLaGraph.nodes)
+       ->WebCoLa.links(setCoLaGraph.links)
+       ->WebCoLa.constraints(setCoLaGraph.constraints)
+       ->WebCoLa.avoidOverlaps(true);
 
-  let colaGraph =
-    switch (linkDistance) {
-    | None => colaGraph
-    | Some(linkDistance) => colaGraph->WebCoLa.linkDistance(linkDistance)
-    };
+     let colaGraph =
+       switch (linkDistance) {
+       | None => colaGraph
+       | Some(linkDistance) => colaGraph->WebCoLa.linkDistance(linkDistance)
+       };
 
-  let colaGraph = colaGraph->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
+     let colaGraph = colaGraph->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
 
-  let nodes = colaGraph->WebCoLa.getNodes;
-  nodes
-  |> Array.to_list
-  |> List.filter((WebCoLa.{temp}) => !temp)
-  |> List.combine(nodeSizeOffsets)
-  |> List.map(((sizeOffset, WebCoLa.{x, y})) =>
-       {
-         translation: {
-           x: x -. sizeOffset->Rectangle.x1,
-           y: y -. sizeOffset->Rectangle.y1,
-         },
-         sizeOffset,
-       }
-     );
-  /* TODO: this translation works, but not sure why. need to fix things. renders it at the origin */
-  /* let union = Rectangle.union_list(bboxes); */
-  /* List.map(
-       bbox => bbox->Rectangle.translate(-. union->Rectangle.x1, -. union->Rectangle.y1),
-       bboxes,
-     ); */
-};
+     let nodes = colaGraph->WebCoLa.getNodes;
+     nodes
+     |> Array.to_list
+     |> List.filter((WebCoLa.{temp}) => !temp)
+     |> List.combine(nodeBBox)
+     |> List.map(((sizeOffset, WebCoLa.{x, y})) =>
+          {
+            translation: {
+              x: x -. sizeOffset->Rectangle.x1,
+              y: y -. sizeOffset->Rectangle.y1,
+            },
+            sizeOffset,
+          }
+        );
+     /* TODO: this translation works, but not sure why. need to fix things. renders it at the origin */
+     /* let union = Rectangle.union_list(bboxes); */
+     /* List.map(
+          bbox => bbox->Rectangle.translate(-. union->Rectangle.x1, -. union->Rectangle.y1),
+          bboxes,
+        ); */
+   }; */
 
 let defaultRender = (nodes, bbox, links) => {
   <>
-    {if (debug_) {
-       //  Js.log2("default render bbox", bbox);
-       drawBBox(
-         ~stroke="blue",
-         {...bbox, sizeOffset: bbox.sizeOffset->Rectangle.inflate(0.5, 0.5)},
-       );
-     } else {
-       <> </>;
-     }}
     /* translate the coordinate system */
-    {translate(
-       bbox.translation,
-       <>
-         <g className="nodes">
-           {nodes
-            |> List.map((Node.{bbox, rendered}) => {
-                 //  Js.log2("bbox", bbox);
-                 rendered
-               })
-            |> Array.of_list
-            |> React.array}
-         </g>
-       </>,
-     )}
+    <>
+      <g className="nodes">
+        {nodes
+         |> List.map((Node.{transform, bbox, rendered}) => {
+              //  Js.log2("bbox", bbox);
+              svgTransform(transform, bbox, rendered)
+            })
+         |> Array.of_list
+         |> React.array}
+      </g>
+    </>
     /* TODO: links already take their parent translation into account unlike nodes. is that good? */
     <g className="links"> {links |> Array.of_list |> React.array} </g>
   </>;
@@ -228,91 +232,56 @@ let atom = (~tags=[], ~links=[], r, sizeOffset, ()) =>
     ~tags=["atom", ...tags],
     ~nodes=[],
     ~links,
-    ~layout=(_, _, _) => [],
-    ~computeSizeOffset=_ => sizeOffset,
-    ~render=
-      (_, bbox, _) =>
-        <>
-          {if (debug_) {
-             <>
-               {/* {drawBBox(~stroke="purple", sizeOffset)} */ drawBBox(~stroke="magenta", bbox)}
-             </>;
-           } else {
-             <> </>;
-           }}
-          {translate(bbox.translation, r)}
-        </>,
+    ~layout=(_, _, _) => MS.empty,
+    ~computeBBox=_ => sizeOffset,
+    ~render=(_, _, _) => r,
   );
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
-let nest = (~tags=[], ~nodes, ~links, ~computeSizeOffset, ~render, ()) =>
+let nest = (~tags=[], ~nodes, ~links, ~computeBBox, ~render, ()) =>
   Main.make(
     ~tags=["nest", ...tags],
     ~nodes,
     ~links,
-    ~layout=(_, sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
-    ~computeSizeOffset,
+    ~layout=(_, bboxes, _) => bboxes->MS.map(_ => Transform.ident),
+    ~computeBBox,
     ~render,
   );
 
+/* TODO: transform must include scaling! */
 let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
-      /*     Js.log3("p1", bbox->x1, bbox->y1);
-             Js.log3("p2", bbox->x2, bbox->y2);
-             Js.log3("center", bbox->cx, bbox->cy);
-             Js.log3("width/2 height/2", bbox->width /. 2., bbox->height /. 2.);
-             Js.log3("center - wh/2", bbox->cx -. bbox->width /. 2., bbox->cy -. bbox->height /. 2.);
-             Js.log2("nodes", nodes |> Array.of_list); */
-      {if (debug_) {
-         drawBBox(
-           ~stroke="green",
-           {...bbox, sizeOffset: bbox.sizeOffset->Rectangle.inflate(0.5, 0.5)},
-         );
-       } else {
-         <> </>;
-       }}
       <rect
-        transform={
-          "translate("
-          ++ Js.Float.toString(bbox.sizeOffset->Rectangle.x1 +. bbox.translation.x)
-          ++ ", "
-          ++ Js.Float.toString(bbox.sizeOffset->Rectangle.y1 +. bbox.translation.y)
-          ++ ")"
-        }
-        width={Js.Float.toString(bbox.sizeOffset->Rectangle.width)}
-        height={Js.Float.toString(bbox.sizeOffset->Rectangle.height)}
+        width={Js.Float.toString(bbox->Rectangle.width)}
+        height={Js.Float.toString(bbox->Rectangle.height)}
         fillOpacity="0"
         stroke="#000"
       />
-      {defaultRender(
-         nodes,
-         {...bbox, sizeOffset: bbox.sizeOffset->inflate(-. dx, -. dy)},
-         links,
-       )}
+      {defaultRender(nodes, bbox, links)}
     </>;
   };
   Main.make(
     ~tags=["box", ...tags],
     ~nodes=[node],
     ~links,
-    ~layout=(_, sizeOffsets, _) => List.map(sizeOffsetToBBox, sizeOffsets),
-    ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->union_list->inflate(dx, dy),
+    ~layout=(_, bboxes, _) => MS.map(bboxes, _ => Transform.ident),
+    ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->union_list->inflate(dx, dy),
     ~render,
   );
 };
 
-let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
-  Main.make(
-    ~tags=["graph", ...tags],
-    ~nodes,
-    ~links,
-    ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
-    ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
-    ~render=defaultRender,
-  );
+/* let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
+   Main.make(
+     ~tags=["graph", ...tags],
+     ~nodes,
+     ~links,
+     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
+     ~computeBBox=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
+     ~render=defaultRender,
+   ); */
 
 /* https://2ality.com/2018/01/lists-arrays-reasonml.html */
 /**
@@ -343,7 +312,8 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
     ~nodes,
     ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
     ~layout=
-      (_, [n, ...rest] as ns, _) => {
+      (uids, ns, _) => {
+        let [n, ...rest] as ns = List.map(MS.getExn(ns), uids);
         /* LR
             {w0, h0}
             {w1, h1}
@@ -353,21 +323,27 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
             {w0 + gap, 0, w1, h1}
             {(w0 + gap) + w1 + gap, 0, w2, h2}
            */
-        let newBBox = (bbox, sizeOffset) => {
-          let width = sizeOffset->Rectangle.width;
-          let height = sizeOffset->Rectangle.height;
+        let newBBox = ((transform, prevBBox), bbox) => {
+          let width = bbox->Rectangle.width;
+          let height = bbox->Rectangle.height;
           switch (direction) {
-          | UpDown => {
-              translation: {
-                x: -. sizeOffset->Rectangle.x1 /* -. sizeOffset->Rectangle.width   /. 2. /* center horizontally */ */, /* move to origin */
-                y:
-                  -. sizeOffset->Rectangle.y1  /* move to origin */
-                  +. bbox.translation.y  /* translate past prev. bbox */
-                  +. bbox.sizeOffset->Rectangle.y2  /* translate past prev. bbox */
-                  +. gap /* add gap */,
+          | UpDown => (
+              Transform.{
+                scale: {
+                  x: 1.,
+                  y: 1.,
+                },
+                translate: {
+                  x: -. bbox->Rectangle.x1 /* -. sizeOffset->Rectangle.width   /. 2. /* center horizontally */ */, /* move to origin */
+                  y:
+                    -. bbox->Rectangle.y1  /* move to origin */
+                    +. transform.translate.y  /* translate past prev. bbox */
+                    +. prevBBox->Rectangle.y2  /* translate past prev. bbox */
+                    +. gap /* add gap */,
+                },
               },
-              sizeOffset,
-            }
+              bbox,
+            )
           /* Rectangle.fromPointSize(~x=0., ~y=bbox->Rectangle.y2 +. gap, ~width, ~height); */
           | DownUp => raise(failwith("TODO"))
           /* Rectangle.fromCenterPointSize(
@@ -376,20 +352,26 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
                ~width=bbox->Rectangle.width,
                ~height=bbox->Rectangle.height,
              ); */
-          | LeftRight => {
-              translation: {
-                x:
-                  -. sizeOffset->Rectangle.x1  /* move to origin */
-                  +. bbox.translation.x  /* translate past prev. bbox */
-                  +. bbox.sizeOffset->Rectangle.x2  /* translate past prev. bbox */
-                  +. gap /* add gap */,
-                y:
-                  -. sizeOffset->Rectangle.y1  /* move to origin */
-                  -. sizeOffset->Rectangle.height
-                  /. 2. /* center vertically */,
+          | LeftRight => (
+              Transform.{
+                scale: {
+                  x: 1.,
+                  y: 1.,
+                },
+                translate: {
+                  x:
+                    -. bbox->Rectangle.x1  /* move to origin */
+                    +. transform.translate.x  /* translate past prev. bbox */
+                    +. prevBBox->Rectangle.x2  /* translate past prev. bbox */
+                    +. gap /* add gap */,
+                  y:
+                    -. bbox->Rectangle.y1  /* move to origin */
+                    -. bbox->Rectangle.height
+                    /. 2. /* center vertically */,
+                },
               },
-              sizeOffset,
-            }
+              bbox,
+            )
           /* Rectangle.fromPointSize(
                ~x=bbox->Rectangle.x2 +. gap,
                ~y=sizeOffset->Rectangle.y1,
@@ -407,24 +389,36 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
         };
         let initialBBox =
           switch (direction) {
-          | UpDown => {
-              translation: {
-                x: -. n->Rectangle.x1 /* -. n->Rectangle.width /. 2. */,
-                y: 0.,
+          | UpDown => (
+              Transform.{
+                scale: {
+                  x: 1.,
+                  y: 1.,
+                },
+                translate: {
+                  x: -. n->Rectangle.x1 /* -. n->Rectangle.width /. 2. */,
+                  y: 0.,
+                },
               },
-              sizeOffset: n,
-            }
+              n,
+            )
           | DownUp => raise(failwith("TODO"))
-          | LeftRight => {
-              translation: {
-                x: 0.,
-                y: -. n->Rectangle.y1 -. n->Rectangle.height /. 2.,
+          | LeftRight => (
+              {
+                scale: {
+                  x: 1.,
+                  y: 1.,
+                },
+                translate: {
+                  x: 0.,
+                  y: -. n->Rectangle.y1 -. n->Rectangle.height /. 2.,
+                },
               },
-              sizeOffset: n,
-            }
+              n,
+            )
           | RightLeft => raise(failwith("TODO"))
           };
-        let bboxes: list(bbox) = scanl(newBBox, initialBBox, rest);
+        let (transforms, _) = scanl(newBBox, initialBBox, rest) |> List.split;
         // Js.log2("seq boxes", bboxes |> Array.of_list);
         // Js.log2("seq union", Rectangle.union_list(bboxes));
         /* Js.log2(
@@ -438,11 +432,12 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
              "test",
              Sidewinder.Util.scanl((a, b) => a / b, 64, [4, 2, 4]) |> Array.of_list,
            ); */
-        Js.log2("seq bboxes", bboxes |> Array.of_list);
-        bboxes;
+        // Js.log2("seq bboxes", bboxes |> Array.of_list);
+        List.combine(uids, transforms)
+        |> List.fold_left((mp, (uid, transform)) => mp->MS.set(uid, transform), MS.empty);
       },
     // Js.log2("seq ns sizes", ns |> Array.of_list);
-    ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
+    ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
     ~render=defaultRender,
   );
 
@@ -502,25 +497,25 @@ let makeTableLinks = (linkRender, uids) => {
   List.flatten(horizontalPairs @ verticalPairs);
 };
 
-let rec partitionAux = (acc, n, l) =>
-  if (n == 0) {
-    (List.rev(acc), l);
-  } else {
-    switch (l) {
-    | [] => failwith("ran out of elements to partition")
-    | [h, ...t] => partitionAux([h, ...acc], n - 1, t)
-    };
-  };
+/* let rec partitionAux = (acc, n, l) =>
+     if (n == 0) {
+       (List.rev(acc), l);
+     } else {
+       switch (l) {
+       | [] => failwith("ran out of elements to partition")
+       | [h, ...t] => partitionAux([h, ...acc], n - 1, t)
+       };
+     };
 
-let partition = partitionAux([]);
+   let partition = partitionAux([]); */
 
-let rec constructMatrix = (l, rowLen) =>
-  switch (l) {
-  | [] => []
-  | l =>
-    let (h, t) = partition(rowLen, l);
-    [h, ...constructMatrix(t, rowLen)];
-  };
+/* let rec constructMatrix = (l, rowLen) =>
+   switch (l) {
+   | [] => []
+   | l =>
+     let (h, t) = partition(rowLen, l);
+     [h, ...constructMatrix(t, rowLen)];
+   }; */
 
 /* table. Like a nested hSeq and vSeq except allows layout and rendering to be influenced by all
    elements of the table */
@@ -528,51 +523,51 @@ let rec constructMatrix = (l, rowLen) =>
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: test! */
-let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
-  let colLen = List.length(nodes);
-  let rowLen = List.length(List.nth(nodes, 0));
-  Main.make(
-    ~tags=["table", ...tags],
-    ~nodes=List.flatten(nodes),
-    ~links=makeTableLinks(linkRender, List.map(List.map((Kernel.{uid}) => uid), nodes)),
-    ~layout=
-      (_, ns, _) => {
-        /* reconstruct matrix */
-        let mat = constructMatrix(ns, rowLen);
+/* let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
+     let colLen = List.length(nodes);
+     let rowLen = List.length(List.nth(nodes, 0));
+     Main.make(
+       ~tags=["table", ...tags],
+       ~nodes=List.flatten(nodes),
+       ~links=makeTableLinks(linkRender, List.map(List.map((Kernel.{uid}) => uid), nodes)),
+       ~layout=
+         (_, ns, _) => {
+           /* reconstruct matrix */
+           let mat = constructMatrix(ns, rowLen);
 
-        /* max height per row */
-        let maxHeightPerRow: list(float) =
-          mat |> List.map(row => row |> List.map(Rectangle.height) |> List.fold_left(max, 0.));
-        let cumulativeHeight = scanl((+.), 0., maxHeightPerRow);
-        /* transpose */
-        let matT = range(0, rowLen) |> List.map(i => List.map(l => List.nth(l, i), mat));
-        /* max width per col */
-        let maxWidthPerCol: list(float) =
-          matT |> List.map(col => col |> List.map(Rectangle.width) |> List.fold_left(max, 0.));
-        let cumulativeWidth = scanl((+.), 0., maxWidthPerCol);
+           /* max height per row */
+           let maxHeightPerRow: list(float) =
+             mat |> List.map(row => row |> List.map(Rectangle.height) |> List.fold_left(max, 0.));
+           let cumulativeHeight = scanl((+.), 0., maxHeightPerRow);
+           /* transpose */
+           let matT = range(0, rowLen) |> List.map(i => List.map(l => List.nth(l, i), mat));
+           /* max width per col */
+           let maxWidthPerCol: list(float) =
+             matT |> List.map(col => col |> List.map(Rectangle.width) |> List.fold_left(max, 0.));
+           let cumulativeWidth = scanl((+.), 0., maxWidthPerCol);
 
-        /* TODO: incorporate gap and direction info. currently assumes gaps are 0 and directions are
-           topleft to bottomright */
-        let computeBBox = (i, j, sizeOffset) => {
-          let widthSoFar = List.nth(cumulativeWidth, j);
-          let heightSoFar = List.nth(cumulativeHeight, i);
-          {
-            translation: {
-              x: -. sizeOffset->Rectangle.x1 +. widthSoFar,
-              y: -. sizeOffset->Rectangle.y1 -. sizeOffset->Rectangle.height /. 2. +. heightSoFar,
-            },
-            sizeOffset,
-          };
-        };
+           /* TODO: incorporate gap and direction info. currently assumes gaps are 0 and directions are
+              topleft to bottomright */
+           let computeBBox = (i, j, sizeOffset) => {
+             let widthSoFar = List.nth(cumulativeWidth, j);
+             let heightSoFar = List.nth(cumulativeHeight, i);
+             {
+               translation: {
+                 x: -. sizeOffset->Rectangle.x1 +. widthSoFar,
+                 y: -. sizeOffset->Rectangle.y1 -. sizeOffset->Rectangle.height /. 2. +. heightSoFar,
+               },
+               sizeOffset,
+             };
+           };
 
-        let bboxes =
-          mat
-          |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
-          |> List.flatten;
-        Js.log2("table bboxes", bboxes |> Array.of_list);
-        bboxes;
-      },
-    ~computeSizeOffset=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
-    ~render=defaultRender,
-  );
-};
+           let bboxes =
+             mat
+             |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
+             |> List.flatten;
+           Js.log2("table bboxes", bboxes |> Array.of_list);
+           bboxes;
+         },
+       ~computeBBox=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
+       ~render=defaultRender,
+     );
+   }; */

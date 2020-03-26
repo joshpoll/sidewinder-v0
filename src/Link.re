@@ -2,7 +2,7 @@
 open Path;
 
 /* TODO: this is the same as rectangle although it's used for a different purpose. combine? */
-type linkRender = option((~source: Node.sizeOffset, ~target: Node.sizeOffset) => React.element);
+type linkRender = option((~source: Node.bbox, ~target: Node.bbox) => React.element);
 
 /* TODO: this might be a nice way to compress, but not sure if everything needs linkRender yet! */
 type link('s, 't) = {

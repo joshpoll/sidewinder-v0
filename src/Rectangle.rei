@@ -59,6 +59,8 @@ let inflateHeight: (t, float) => t;
  */
 let inflate: (t, float, float) => t;
 
-let translate: (t, float, float) => t;
+let translate: (t, Transform.translate) => t;
+let scale: (t, Transform.scale) => t;
+let transform: (t, Transform.t) => t;
 
 let renderable: t => bool;
