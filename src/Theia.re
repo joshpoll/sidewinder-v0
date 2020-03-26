@@ -125,85 +125,95 @@ let drawBBox = (~stroke="red", transform, bbox) => {
   );
 };
 module MS = Belt.Map.String;
-/* let graphLayout =
-       (
-         ~constraints,
-         ~gap,
-         ~linkDistance,
-         uidMap,
-         nodeBBox: MS.t(Node.bbox),
-         links: list(Sidewinder.Link.layout),
-       ) => {
-     let nodes =
-       MS.map(nodeBBox, sizeOffset =>
-         SetCoLa.{
-           width: sizeOffset->Rectangle.width,
-           height: sizeOffset->Rectangle.height,
-           custom: Js.Obj.empty(),
-         }
-       );
-     let links =
-       List.map(
-         (Link.{source, target}: Link.layout) =>
-           WebCoLa.{
-             source: NN(uidMap->MS.getExn(source)),
-             target: NN(uidMap->MS.getExn(target)),
-             length: None,
-           },
-         links,
-       )
-       |> Array.of_list;
+/* https://stackoverflow.com/questions/31279920/finding-an-item-in-a-list-and-returning-its-index-ocaml */
+let rec find = (x, lst) =>
+  switch (lst) {
+  | [] => raise(failwith("Not Found"))
+  | [h, ...t] =>
+    if (x == h) {
+      0;
+    } else {
+      1 + find(x, t);
+    }
+  };
 
-     let setCoLaGraph =
-       SetCoLa.setCola
-       ->SetCoLa.nodes(nodes->MS.valuesToArray)
-       ->SetCoLa.links(links)
-       ->SetCoLa.constraints(constraints);
+let graphLayout =
+    (
+      ~constraints,
+      ~gap,
+      ~linkDistance,
+      uids,
+      bboxes: MS.t(Node.bbox),
+      links: list(Sidewinder.Link.layout),
+    ) => {
+  let nodes =
+    MS.map(bboxes, sizeOffset =>
+      SetCoLa.{
+        width: sizeOffset->Rectangle.width,
+        height: sizeOffset->Rectangle.height,
+        custom: Js.Obj.empty(),
+      }
+    );
+  let links =
+    List.map(
+      (Link.{source, target}: Link.layout) =>
+        WebCoLa.{
+          source: NN(find(source, uids)),
+          target: NN(find(target, uids)),
+          length: None,
+        },
+      links,
+    )
+    |> Array.of_list;
 
-     let setCoLaGraph =
-       switch (gap) {
-       | None => setCoLaGraph
-       | Some(gap) => setCoLaGraph->SetCoLa.gap(gap)
-       };
+  let setCoLaGraph =
+    SetCoLa.setCola
+    ->SetCoLa.nodes(nodes->MS.valuesToArray)
+    ->SetCoLa.links(links)
+    ->SetCoLa.constraints(constraints);
 
-     let setCoLaGraph = setCoLaGraph->SetCoLa.layout;
+  let setCoLaGraph =
+    switch (gap) {
+    | None => setCoLaGraph
+    | Some(gap) => setCoLaGraph->SetCoLa.gap(gap)
+    };
 
-     let colaGraph =
-       WebCoLa.colaLayout()
-       ->WebCoLa.nodes(setCoLaGraph.nodes)
-       ->WebCoLa.links(setCoLaGraph.links)
-       ->WebCoLa.constraints(setCoLaGraph.constraints)
-       ->WebCoLa.avoidOverlaps(true);
+  let setCoLaGraph = setCoLaGraph->SetCoLa.layout;
 
-     let colaGraph =
-       switch (linkDistance) {
-       | None => colaGraph
-       | Some(linkDistance) => colaGraph->WebCoLa.linkDistance(linkDistance)
-       };
+  let colaGraph =
+    WebCoLa.colaLayout()
+    ->WebCoLa.nodes(setCoLaGraph.nodes)
+    ->WebCoLa.links(setCoLaGraph.links)
+    ->WebCoLa.constraints(setCoLaGraph.constraints)
+    ->WebCoLa.avoidOverlaps(true);
 
-     let colaGraph = colaGraph->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
+  let colaGraph =
+    switch (linkDistance) {
+    | None => colaGraph
+    | Some(linkDistance) => colaGraph->WebCoLa.linkDistance(linkDistance)
+    };
 
-     let nodes = colaGraph->WebCoLa.getNodes;
-     nodes
-     |> Array.to_list
-     |> List.filter((WebCoLa.{temp}) => !temp)
-     |> List.combine(nodeBBox)
-     |> List.map(((sizeOffset, WebCoLa.{x, y})) =>
-          {
-            translation: {
-              x: x -. sizeOffset->Rectangle.x1,
-              y: y -. sizeOffset->Rectangle.y1,
-            },
-            sizeOffset,
-          }
-        );
-     /* TODO: this translation works, but not sure why. need to fix things. renders it at the origin */
-     /* let union = Rectangle.union_list(bboxes); */
-     /* List.map(
-          bbox => bbox->Rectangle.translate(-. union->Rectangle.x1, -. union->Rectangle.y1),
-          bboxes,
-        ); */
-   }; */
+  let colaGraph = colaGraph->WebCoLa.start(Some(50.), Some(100.), Some(200.), None);
+
+  let nodes =
+    colaGraph->WebCoLa.getNodes |> Array.to_list |> List.filter((WebCoLa.{temp}) => !temp);
+  MS.mapWithKey(
+    bboxes,
+    (uid, bbox) => {
+      let colaNode = List.nth(nodes, find(uid, uids));
+      Transform.{
+        scale: {
+          x: 1.,
+          y: 1.,
+        },
+        translate: {
+          x: colaNode.x -. bbox->Rectangle.x1,
+          y: colaNode.y -. bbox->Rectangle.y1,
+        },
+      };
+    },
+  );
+};
 
 let defaultRender = (nodes, bbox, links) => {
   <>
@@ -273,15 +283,15 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   );
 };
 
-/* let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
-   Main.make(
-     ~tags=["graph", ...tags],
-     ~nodes,
-     ~links,
-     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
-     ~computeBBox=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
-     ~render=defaultRender,
-   ); */
+let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
+  Main.make(
+    ~tags=["graph", ...tags],
+    ~nodes,
+    ~links,
+    ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
+    ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
+    ~render=defaultRender,
+  );
 
 /* https://2ality.com/2018/01/lists-arrays-reasonml.html */
 /**
@@ -478,44 +488,15 @@ let rec repeat = (n, a) =>
     [a, ...repeat(n - 1, a)];
   };
 
-/* http://blog.shaynefletcher.org/2017/08/transpose.html */
-let rec transposeAux = (acc, ls) =>
-  switch (ls) {
-  | []
-  | [[], ..._] => List.rev(acc)
-  | ls => transposeAux([List.map(List.hd, ls), ...acc], List.map(List.tl, ls))
-  };
-
-let transpose = transposeAux([]);
-
 let makeTableLinks = (linkRender, uids) => {
   // Js.log2("table uids", uids |> List.map(Array.of_list) |> Array.of_list);
-  let horizontalPairs = List.map(makeLinks(linkRender), uids);
+  let horizontalPairs = List.map(makeLinks(linkRender), uids |> Matrix.toListList);
   // Js.log2("hPairs", horizontalPairs |> List.map(Array.of_list) |> Array.of_list);
-  let verticalPairs = List.map(makeLinks(linkRender), transpose(uids));
+  let verticalPairs =
+    List.map(makeLinks(linkRender), Matrix.transpose(uids) |> Matrix.toListList);
   // Js.log2("vPairs", verticalPairs |> List.map(Array.of_list) |> Array.of_list);
   List.flatten(horizontalPairs @ verticalPairs);
 };
-
-/* let rec partitionAux = (acc, n, l) =>
-     if (n == 0) {
-       (List.rev(acc), l);
-     } else {
-       switch (l) {
-       | [] => failwith("ran out of elements to partition")
-       | [h, ...t] => partitionAux([h, ...acc], n - 1, t)
-       };
-     };
-
-   let partition = partitionAux([]); */
-
-/* let rec constructMatrix = (l, rowLen) =>
-   switch (l) {
-   | [] => []
-   | l =>
-     let (h, t) = partition(rowLen, l);
-     [h, ...constructMatrix(t, rowLen)];
-   }; */
 
 /* table. Like a nested hSeq and vSeq except allows layout and rendering to be influenced by all
    elements of the table */
@@ -523,51 +504,64 @@ let makeTableLinks = (linkRender, uids) => {
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: test! */
-/* let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
-     let colLen = List.length(nodes);
-     let rowLen = List.length(List.nth(nodes, 0));
-     Main.make(
-       ~tags=["table", ...tags],
-       ~nodes=List.flatten(nodes),
-       ~links=makeTableLinks(linkRender, List.map(List.map((Kernel.{uid}) => uid), nodes)),
-       ~layout=
-         (_, ns, _) => {
-           /* reconstruct matrix */
-           let mat = constructMatrix(ns, rowLen);
+let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
+  let colLen = List.length(nodes);
+  let rowLen = List.length(List.nth(nodes, 0));
+  Main.make(
+    ~tags=["table", ...tags],
+    ~nodes=List.flatten(nodes),
+    ~links=
+      makeTableLinks(
+        linkRender,
+        nodes |> Matrix.fromListList |> Matrix.map((Kernel.{uid}) => uid),
+      ),
+    ~layout=
+      (uids, ns, _) => {
+        /* reconstruct matrix */
+        let mat = Matrix.fromList(List.map(MS.getExn(ns), uids), rowLen);
 
-           /* max height per row */
-           let maxHeightPerRow: list(float) =
-             mat |> List.map(row => row |> List.map(Rectangle.height) |> List.fold_left(max, 0.));
-           let cumulativeHeight = scanl((+.), 0., maxHeightPerRow);
-           /* transpose */
-           let matT = range(0, rowLen) |> List.map(i => List.map(l => List.nth(l, i), mat));
-           /* max width per col */
-           let maxWidthPerCol: list(float) =
-             matT |> List.map(col => col |> List.map(Rectangle.width) |> List.fold_left(max, 0.));
-           let cumulativeWidth = scanl((+.), 0., maxWidthPerCol);
+        /* max height per row */
+        let maxHeightPerRow: list(float) =
+          mat
+          |> Matrix.toListList
+          |> List.map(row => row |> List.map(Rectangle.height) |> List.fold_left(max, 0.));
+        let cumulativeHeight = scanl((+.), 0., maxHeightPerRow);
+        /* transpose */
+        let matT = Matrix.transpose(mat);
+        /* max width per col */
+        let maxWidthPerCol: list(float) =
+          matT
+          |> Matrix.toListList
+          |> List.map(col => col |> List.map(Rectangle.width) |> List.fold_left(max, 0.));
+        let cumulativeWidth = scanl((+.), 0., maxWidthPerCol);
 
-           /* TODO: incorporate gap and direction info. currently assumes gaps are 0 and directions are
-              topleft to bottomright */
-           let computeBBox = (i, j, sizeOffset) => {
-             let widthSoFar = List.nth(cumulativeWidth, j);
-             let heightSoFar = List.nth(cumulativeHeight, i);
-             {
-               translation: {
-                 x: -. sizeOffset->Rectangle.x1 +. widthSoFar,
-                 y: -. sizeOffset->Rectangle.y1 -. sizeOffset->Rectangle.height /. 2. +. heightSoFar,
-               },
-               sizeOffset,
-             };
-           };
+        /* TODO: incorporate gap and direction info. currently assumes gaps are 0 and directions are
+           topleft to bottomright */
+        let computeTransform = (i, j, bbox) => {
+          let widthSoFar = List.nth(cumulativeWidth, j);
+          let heightSoFar = List.nth(cumulativeHeight, i);
+          Transform.{
+            scale: {
+              x: 1.,
+              y: 1.,
+            },
+            translate: {
+              x: -. bbox->Rectangle.x1 +. widthSoFar,
+              y: -. bbox->Rectangle.y1 -. bbox->Rectangle.height /. 2. +. heightSoFar,
+            },
+          };
+        };
 
-           let bboxes =
-             mat
-             |> List.mapi((i, row) => row |> List.mapi((j, so) => computeBBox(i, j, so)))
-             |> List.flatten;
-           Js.log2("table bboxes", bboxes |> Array.of_list);
-           bboxes;
-         },
-       ~computeBBox=bs => List.map(bboxToSizeOffset, bs)->Rectangle.union_list,
-       ~render=defaultRender,
-     );
-   }; */
+        let transforms =
+          mat
+          |> Matrix.toListList
+          |> List.mapi((i, row) => row |> List.mapi((j, so) => computeTransform(i, j, so)))
+          |> List.flatten;
+        Js.log2("table transforms", transforms |> Array.of_list);
+        List.combine(uids, transforms)
+        |> List.fold_left((mp, (uid, transform)) => mp->MS.set(uid, transform), MS.empty);
+      },
+    ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
+    ~render=defaultRender,
+  );
+};

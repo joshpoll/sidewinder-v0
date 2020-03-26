@@ -429,34 +429,34 @@ let env = seq(~nodes=[seqTest, z], ~linkRender=None, ~gap=20., ~direction=UpDown
 
 let hSeq = (~gap=0., nodes) => seq(~nodes, ~linkRender=None, ~gap, ~direction=LeftRight, ());
 
-/* let tableTest =
-     table(
-       ~nodes=[[x, y]],
-       ~linkRender=
-         Some(
-           (~source, ~target) =>
-             <line
-               x1={Js.Float.toString(
-                 (source->Sidewinder.Rectangle.x2 +. target->Sidewinder.Rectangle.x1) /. 2.,
-               )}
-               x2={Js.Float.toString(
-                 (source->Sidewinder.Rectangle.x2 +. target->Sidewinder.Rectangle.x1) /. 2.,
-               )}
-               y1={Js.Float.toString(
-                 (source->Sidewinder.Rectangle.y1 +. target->Sidewinder.Rectangle.y1) /. 2.,
-               )}
-               y2={Js.Float.toString(
-                 (source->Sidewinder.Rectangle.y2 +. target->Sidewinder.Rectangle.y2) /. 2.,
-               )}
-               stroke="black"
-             />,
-         ),
-       ~xGap=0.,
-       ~yGap=0.,
-       ~xDirection=LeftRight,
-       ~yDirection=UpDown,
-       (),
-     );
+let tableTest =
+  table(
+    ~nodes=[[x, y]],
+    ~linkRender=
+      Some(
+        (~source, ~target) =>
+          <line
+            x1={Js.Float.toString(
+              (source->Sidewinder.Rectangle.x2 +. target->Sidewinder.Rectangle.x1) /. 2.,
+            )}
+            x2={Js.Float.toString(
+              (source->Sidewinder.Rectangle.x2 +. target->Sidewinder.Rectangle.x1) /. 2.,
+            )}
+            y1={Js.Float.toString(
+              (source->Sidewinder.Rectangle.y1 +. target->Sidewinder.Rectangle.y1) /. 2.,
+            )}
+            y2={Js.Float.toString(
+              (source->Sidewinder.Rectangle.y2 +. target->Sidewinder.Rectangle.y2) /. 2.,
+            )}
+            stroke="black"
+          />,
+      ),
+    ~xGap=0.,
+    ~yGap=0.,
+    ~xDirection=LeftRight,
+    ~yDirection=UpDown,
+    (),
+  );
 
-   let seqTableTest = hSeq(~gap=20., [tableTest]); */
+let seqTableTest = hSeq(~gap=20., [tableTest]);
 let seqSeqTest = hSeq(~gap=20., [seqTest]);

@@ -57,15 +57,15 @@ ReactDOMRe.render(
   makeContainer("append2"),
 );
 
-/* ReactDOMRe.render(
-     <Visualize3 node=Append.tableTest width=500. height=300. />,
-     makeContainer("append2.5"),
-   );
+ReactDOMRe.render(
+  <Visualize3 node=Append.tableTest width=500. height=300. />,
+  makeContainer("append2.5"),
+);
 
-   ReactDOMRe.render(
-     <Visualize3 node=Append.seqTableTest width=500. height=300. />,
-     makeContainer("append3"),
-   ); */
+ReactDOMRe.render(
+  <Visualize3 node=Append.seqTableTest width=500. height=300. />,
+  makeContainer("append3"),
+);
 
 ReactDOMRe.render(
   <Visualize3 node=Append.seqSeqTest width=500. height=300. />,
