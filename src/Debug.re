@@ -20,20 +20,44 @@ let drawBBox = (~stroke="red", bbox) => {
   );
 };
 
-let translate = (Node.{x, y}, r) =>
-  <g transform={"translate(" ++ Js.Float.toString(x) ++ ", " ++ Js.Float.toString(y) ++ ")"}>
-    r
-  </g>;
+let computeSVGTransform =
+    ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
+  /* https://css-tricks.com/transforms-on-svg-elements/ */
+  let scale =
+    "translate("
+    ++ Js.Float.toString(bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.)
+    ++ ", "
+    ++ Js.Float.toString(bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.)
+    ++ ")";
+  let scale =
+    scale ++ " " ++ "scale(" ++ Js.Float.toString(sx) ++ ", " ++ Js.Float.toString(sy) ++ ")";
+  let scale =
+    scale
+    ++ " "
+    ++ "translate("
+    ++ Js.Float.toString(-. (bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.))
+    ++ ", "
+    ++ Js.Float.toString(-. (bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.))
+    ++ ")";
+
+  let translate = "translate(" ++ Js.Float.toString(tx) ++ ", " ++ Js.Float.toString(ty) ++ ")";
+
+  scale ++ " " ++ translate;
+};
+
+let svgTransform = (transform, bbox, r) => {
+  let transform = computeSVGTransform(transform, bbox);
+  <g transform> r </g>;
+};
 
 let defaultRender = (nodes, links) => {
   <>
     <>
       <g className="nodes">
         {nodes
-         |> List.map((Node.{bbox, rendered}) => {
-              //  Js.log2("bbox", bbox);
-              rendered
-            })
+         |> List.map((Node.{transform, bbox, rendered}) =>
+              svgTransform(transform, bbox, rendered)
+            )
          |> Array.of_list
          |> React.array}
       </g>
@@ -72,8 +96,8 @@ let debugLink = (Link.{source, target, linkRender} as l: Link.uid): Link.uid =>
             Js.log3("source sizeOffset", source->Rectangle.x1, source->Rectangle.y1);
             Js.log3("target sizeOffset", target->Rectangle.x1, target->Rectangle.y1);
             <>
-              {drawBBox(~stroke="orange", source)}
-              {drawBBox(~stroke="blue", target)}
+              /* {drawBBox(~stroke="orange", source)}
+                 {drawBBox(~stroke="blue", target)} */
               {lr(~source, ~target)}
             </>;
           },

@@ -31,33 +31,14 @@ let rec computeLCAFrameBBoxAux =
   |> MS.set(_, uid, bbox->Rectangle.transform(transform));
 };
 
-let computeGlobalFrameBBox = computeLCAFrameBBoxAux(Transform.init);
-
-/* let renderLink =
-       (mp: MS.t(Node.bbox), Link.{source, target, linkRender}: Link.uid): React.element => {
-     switch (linkRender) {
-     | None => <> </>
-     | Some(lr) =>
-       /* TODO: would be nice to keep this information ar ound during computeBBoxes */
-       lr(~source=mp->MS.getExn(source), ~target=mp->MS.getExn(target))
-     };
-   };
-
-   let rec renderLinksAux =
-           (mp: MS.t(Node.bbox), Layout.{uid, nodes, links, transform, bbox, render}): node => {
-     let nodes = List.map(renderLinksAux(mp), nodes);
-     let renderedLinks = List.map(renderLink(mp), links);
-     {uid, nodes, links: renderedLinks, transform, bbox, render};
-   };
-    */
-/* let renderLinks = n => renderLinksAux(computeGlobalFrameBBox(n), n); */
+let computeLCAFrameBBox = computeLCAFrameBBoxAux(Transform.init);
 
 let rec computeTransform = (node: Layout.node, path) =>
   switch (path) {
   | [] => node.bbox
   | [h, ...path] =>
-    computeTransform(List.find((Layout.{uid}) => h == uid, node.nodes), path)
-    ->Rectangle.transform(node.transform)
+    let node = List.find((Layout.{uid}) => h == uid, node.nodes);
+    computeTransform(node, path)->Rectangle.transform(node.transform);
   };
 
 let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.element =>

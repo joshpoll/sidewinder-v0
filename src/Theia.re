@@ -1,5 +1,4 @@
 let debug_ = false;
-open Node;
 
 /* Because Relude only implements scanl'.
    This implementation is copied from Haskell: https://hackage.haskell.org/package/base-4.12.0.0/docs/src/GHC.List.html#scanl */
@@ -215,16 +214,14 @@ let graphLayout =
   );
 };
 
-let defaultRender = (nodes, bbox, links) => {
+let defaultRender = (nodes, links) => {
   <>
-    /* translate the coordinate system */
     <>
       <g className="nodes">
         {nodes
-         |> List.map((Node.{transform, bbox, rendered}) => {
-              //  Js.log2("bbox", bbox);
+         |> List.map((Node.{transform, bbox, rendered}) =>
               svgTransform(transform, bbox, rendered)
-            })
+            )
          |> Array.of_list
          |> React.array}
       </g>
@@ -272,7 +269,7 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
         fillOpacity="0"
         stroke="#000"
       />
-      {defaultRender(nodes, bbox, links)}
+      {defaultRender(nodes, links)}
     </>;
   };
   Main.make(
@@ -292,7 +289,7 @@ let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=defaultRender,
+    ~render=(nodes, _, links) => defaultRender(nodes, links),
   );
 
 /* https://2ality.com/2018/01/lists-arrays-reasonml.html */
@@ -451,7 +448,7 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
       },
     // Js.log2("seq ns sizes", ns |> Array.of_list);
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=defaultRender,
+    ~render=(nodes, _, links) => defaultRender(nodes, links),
   );
 
 let str = (~tags=[], s, ()) => {
@@ -491,12 +488,12 @@ let rec repeat = (n, a) =>
     [a, ...repeat(n - 1, a)];
   };
 
-let makeTableLinks = (linkRender, uids) => {
+let makeTableLinks = (xLinkRender, yLinkRender, uids) => {
   // Js.log2("table uids", uids |> List.map(Array.of_list) |> Array.of_list);
-  let horizontalPairs = List.map(makeLinks(linkRender), uids |> Matrix.toListList);
+  let horizontalPairs = List.map(makeLinks(xLinkRender), uids |> Matrix.toListList);
   // Js.log2("hPairs", horizontalPairs |> List.map(Array.of_list) |> Array.of_list);
   let verticalPairs =
-    List.map(makeLinks(linkRender), Matrix.transpose(uids) |> Matrix.toListList);
+    List.map(makeLinks(yLinkRender), Matrix.transpose(uids) |> Matrix.toListList);
   // Js.log2("vPairs", verticalPairs |> List.map(Array.of_list) |> Array.of_list);
   List.flatten(horizontalPairs @ verticalPairs);
 };
@@ -507,7 +504,8 @@ let makeTableLinks = (linkRender, uids) => {
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: test! */
-let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
+let table =
+    (~tags=[], ~nodes, ~xLinkRender, ~yLinkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
   let colLen = List.length(nodes);
   let rowLen = List.length(List.nth(nodes, 0));
   Main.make(
@@ -515,7 +513,8 @@ let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirecti
     ~nodes=List.flatten(nodes),
     ~links=
       makeTableLinks(
-        linkRender,
+        xLinkRender,
+        yLinkRender,
         nodes |> Matrix.fromListList |> Matrix.map((Kernel.{uid}) => uid),
       ),
     ~layout=
@@ -565,6 +564,6 @@ let table = (~tags=[], ~nodes, ~linkRender, ~xGap, ~yGap, ~xDirection, ~yDirecti
         |> List.fold_left((mp, (uid, transform)) => mp->MS.set(uid, transform), MS.empty);
       },
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=defaultRender,
+    ~render=(nodes, _, links) => defaultRender(nodes, links),
   );
 };

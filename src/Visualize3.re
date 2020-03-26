@@ -13,7 +13,7 @@ let make = (~node, ~width, ~height) => {
         ++ Js.Float.toString(height /. 2.)
         ++ ")"
       }>
-      {Main.render(~debug=true, node)}
+      {Main.render(~debug=false, node)}
     </g>
   </svg>;
 };

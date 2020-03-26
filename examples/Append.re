@@ -431,8 +431,8 @@ let hSeq = (~gap=0., nodes) => seq(~nodes, ~linkRender=None, ~gap, ~direction=Le
 
 let tableTest =
   table(
-    ~nodes=[[x(), y()]],
-    ~linkRender=
+    ~nodes=[[x(), y()], [x(), y()]],
+    ~xLinkRender=
       Some(
         (~source, ~target) =>
           <line
@@ -447,6 +447,25 @@ let tableTest =
             )}
             y2={Js.Float.toString(
               (source->Sidewinder.Rectangle.y2 +. target->Sidewinder.Rectangle.y2) /. 2.,
+            )}
+            stroke="black"
+          />,
+      ),
+    ~yLinkRender=
+      Some(
+        (~source, ~target) =>
+          <line
+            x1={Js.Float.toString(
+              (source->Sidewinder.Rectangle.x1 +. target->Sidewinder.Rectangle.x1) /. 2.,
+            )}
+            x2={Js.Float.toString(
+              (source->Sidewinder.Rectangle.x2 +. target->Sidewinder.Rectangle.x2) /. 2.,
+            )}
+            y1={Js.Float.toString(
+              (source->Sidewinder.Rectangle.y2 +. target->Sidewinder.Rectangle.y1) /. 2.,
+            )}
+            y2={Js.Float.toString(
+              (source->Sidewinder.Rectangle.y2 +. target->Sidewinder.Rectangle.y1) /. 2.,
             )}
             stroke="black"
           />,
