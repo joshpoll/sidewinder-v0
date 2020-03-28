@@ -30,7 +30,6 @@ let render = (~debug=false, n: Kernel.node) =>
   |> LCA.fromKernel
   |> Layout.computeBBoxes
   |> RenderLinks.renderLinks
-  |> Render.render
-  |> ((Node.{rendered}) => rendered);
+  |> Render.render;
 
 let debugLCA = (n: Kernel.node) => n |> LCA.fromKernel |> Js.log2("debug lca");

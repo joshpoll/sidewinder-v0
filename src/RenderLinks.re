@@ -4,7 +4,7 @@ type node = {
   links: list(React.element),
   transform: Node.transform,
   bbox: Node.bbox,
-  render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
+  render: (list(React.element), Node.bbox, list(React.element)) => React.element,
 };
 module MS = Belt.Map.String;
 

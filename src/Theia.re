@@ -216,16 +216,7 @@ let graphLayout =
 
 let defaultRender = (nodes, links) => {
   <>
-    <>
-      <g className="nodes">
-        {nodes
-         |> List.map((Node.{transform, bbox, rendered}) =>
-              svgTransform(transform, bbox, rendered)
-            )
-         |> Array.of_list
-         |> React.array}
-      </g>
-    </>
+    <> <g className="nodes"> {nodes |> Array.of_list |> React.array} </g> </>
     /* TODO: links already take their parent translation into account unlike nodes. is that good? */
     <g className="links"> {links |> Array.of_list |> React.array} </g>
   </>;

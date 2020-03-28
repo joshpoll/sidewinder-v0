@@ -55,9 +55,9 @@ let defaultRender = (nodes, links) => {
     <>
       <g className="nodes">
         {nodes
-         |> List.map((Node.{transform, bbox, rendered}) =>
+         /* |> List.map((Node.{transform, bbox, rendered}) =>
               svgTransform(transform, bbox, rendered)
-            )
+            ) */
          |> Array.of_list
          |> React.array}
       </g>

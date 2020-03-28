@@ -9,9 +9,3 @@ type point = {
 type transform = Transform.t;
 
 type bbox = Rectangle.t;
-
-type rendered = {
-  transform,
-  bbox,
-  rendered: React.element,
-};

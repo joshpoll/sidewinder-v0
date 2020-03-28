@@ -42,7 +42,7 @@
 /* type renderedWebCoLaNode = WebCoLa.node({. rendered: React.element}); */
 
 /* type renderedGraphElements = {
-     renderedNodes: list(Node.rendered),
+     renderedNodes: list(React.element),
      renderedEdges: list(Link.local) /* TODO: change? */,
      /* width and height of the graph. computed by unioning the node bounding boxes like webcola does */
      width: float,
@@ -100,7 +100,7 @@ type node = {
   /* takes a list of the bboxes computed by layout (transform applied to each bbox). computes the size of this node */
   computeBBox: MS.t(Node.bbox) => Node.bbox,
   /* TODO: should this be lca? */
-  render: (list(Node.rendered), Node.bbox, list(React.element)) => React.element,
+  render: (list(React.element), Node.bbox, list(React.element)) => React.element,
 };
 
 let rec resolveAbsPath = (node, absPath) =>
