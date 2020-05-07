@@ -47,27 +47,37 @@ let makeContainer = text => {
      makeContainer("append table"),
    ); */
 
+/* ReactDOMRe.render(
+     <Visualize3 node={Append.seqTest()} width=500. height=300. />,
+     makeContainer("append"),
+   );
+
+   ReactDOMRe.render(
+     <Visualize3 node=Append.env width=500. height=300. />,
+     makeContainer("append2"),
+   );
+
+   ReactDOMRe.render(
+     <Visualize3 node=Append.tableTest width=500. height=300. />,
+     makeContainer("append2.5"),
+   );
+
+   ReactDOMRe.render(
+     <Visualize3 node=Append.seqTableTest width=500. height=300. />,
+     makeContainer("append3"),
+   );
+
+   ReactDOMRe.render(
+     <Visualize3 node=Append.seqSeqTest width=500. height=300. />,
+     makeContainer("append3"),
+   ); */
+
 ReactDOMRe.render(
-  <Visualize3 node={Append.seqTest()} width=500. height=300. />,
-  makeContainer("append"),
+  React.createElement(Card.make, Card.makeProps()),
+  makeContainer("spring test"),
 );
 
 ReactDOMRe.render(
-  <Visualize3 node=Append.env width=500. height=300. />,
-  makeContainer("append2"),
-);
-
-ReactDOMRe.render(
-  <Visualize3 node=Append.tableTest width=500. height=300. />,
-  makeContainer("append2.5"),
-);
-
-ReactDOMRe.render(
-  <Visualize3 node=Append.seqTableTest width=500. height=300. />,
-  makeContainer("append3"),
-);
-
-ReactDOMRe.render(
-  <Visualize3 node=Append.seqSeqTest width=500. height=300. />,
-  makeContainer("append3"),
+  <Visualize3 node=TableExamples.ex0 width=500. height=300. debug=true />,
+  makeContainer("table0"),
 );

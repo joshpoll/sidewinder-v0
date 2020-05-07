@@ -1,4 +1,4 @@
-let rec hideNodes = (tag, Kernel.{uid, tags, nodes, links, layout, computeBBox, render}) =>
+let rec hideNodes = (tag, Kernel.{uid, flow, tags, nodes, links, layout, computeBBox, render}) =>
   if (List.mem(tag, tags)) {
     (None, [uid]);
   } else {
@@ -7,6 +7,7 @@ let rec hideNodes = (tag, Kernel.{uid, tags, nodes, links, layout, computeBBox, 
       Some(
         Kernel.{
           uid,
+          flow,
           tags,
           nodes: nodes |> List.filter(Belt.Option.isSome) |> List.map(Belt.Option.getExn),
           links,
@@ -19,9 +20,11 @@ let rec hideNodes = (tag, Kernel.{uid, tags, nodes, links, layout, computeBBox, 
     );
   };
 
-let rec hideLinks = (hiddenUIDs, Kernel.{uid, tags, nodes, links, layout, computeBBox, render}) =>
+let rec hideLinks =
+        (hiddenUIDs, Kernel.{uid, flow, tags, nodes, links, layout, computeBBox, render}) =>
   Kernel.{
     uid,
+    flow,
     tags,
     nodes: List.map(hideLinks(hiddenUIDs), nodes),
     links:

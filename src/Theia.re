@@ -216,8 +216,7 @@ let graphLayout =
 
 let defaultRender = (nodes, links) => {
   <>
-    <> <g className="nodes"> {nodes |> Array.of_list |> React.array} </g> </>
-    /* TODO: links already take their parent translation into account unlike nodes. is that good? */
+    <g className="nodes"> {nodes |> Array.of_list |> React.array} </g>
     <g className="links"> {links |> Array.of_list |> React.array} </g>
   </>;
 };
@@ -494,7 +493,7 @@ let makeTableLinks = (xLinkRender, yLinkRender, uids) => {
 /* kind of weird, because rows seem like a natural linkage more than columns, but need to consider
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
-/* TODO: test! */
+/* TODO: add more customization for row and column arrangement */
 let table =
     (~tags=[], ~nodes, ~xLinkRender, ~yLinkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
   let colLen = List.length(nodes);
@@ -533,14 +532,18 @@ let table =
         let computeTransform = (i, j, bbox) => {
           let widthSoFar = List.nth(cumulativeWidth, j);
           let heightSoFar = List.nth(cumulativeHeight, i);
+          let cellWidth = List.nth(maxWidthPerCol, j);
+          let cellHeight = List.nth(maxHeightPerRow, i);
+          let widthPadding = cellWidth -. bbox->Rectangle.width;
+          let heightPadding = cellHeight -. bbox->Rectangle.height;
           Transform.{
             scale: {
               x: 1.,
               y: 1.,
             },
             translate: {
-              x: -. bbox->Rectangle.x1 +. widthSoFar,
-              y: -. bbox->Rectangle.y1 -. bbox->Rectangle.height /. 2. +. heightSoFar,
+              x: -. bbox->Rectangle.x1 +. widthPadding /. 2. +. widthSoFar,
+              y: -. bbox->Rectangle.y1 +. heightPadding /. 2. +. heightSoFar,
             },
           };
         };

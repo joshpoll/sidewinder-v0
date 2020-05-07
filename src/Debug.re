@@ -52,17 +52,14 @@ let svgTransform = (transform, bbox, r) => {
 
 let defaultRender = (nodes, links) => {
   <>
-    <>
-      <g className="nodes">
-        {nodes
-         /* |> List.map((Node.{transform, bbox, rendered}) =>
-              svgTransform(transform, bbox, rendered)
-            ) */
-         |> Array.of_list
-         |> React.array}
-      </g>
-    </>
-    /* TODO: links already take their parent translation into account unlike nodes. is that good? */
+    <g className="nodes">
+      {nodes
+       /* |> List.map((Node.{transform, bbox, rendered}) =>
+            svgTransform(transform, bbox, rendered)
+          ) */
+       |> Array.of_list
+       |> React.array}
+    </g>
     <g className="links"> {links |> Array.of_list |> React.array} </g>
   </>;
 };
@@ -74,6 +71,7 @@ let debugBBox = (~dx, ~dy, node) => {
   };
   Kernel.{
     uid: Random.int(1000000) + 1000 |> string_of_int,
+    flow: [] /* TODO */,
     tags: ["debug"],
     nodes: [node],
     links: [],

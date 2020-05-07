@@ -10,6 +10,7 @@ let readAndUpdateCounter = () => {
 /* TODO: may want to restrict inputs to local ids somehow? */
 let make = (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render): Kernel.node => {
   uid: string_of_int(readAndUpdateCounter()),
+  flow: [], /* TODO */
   tags,
   nodes,
   links,

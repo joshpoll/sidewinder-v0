@@ -16,6 +16,7 @@ module MS = Belt.Map.String;
 
 type node = {
   uid: Node.uid,
+  flow: list(Node.uid),
   tags: list(Kernel.tag),
   nodes: list(node),
   renderingLinks: list(Link.lcaPath),
@@ -141,10 +142,12 @@ let rec computeLinksMapAux =
 let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks = (localLinks, Kernel.{uid, tags, nodes, links, layout, computeBBox, render}) => {
+let rec placeLinks =
+        (localLinks, Kernel.{uid, flow, tags, nodes, links, layout, computeBBox, render}) => {
   let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
+    flow,
     tags,
     nodes: List.map(placeLinks(localLinks), nodes),
     renderingLinks,
@@ -162,9 +165,10 @@ let fromKernel = n => {
 };
 
 let rec toKernel =
-        ({uid, tags, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, render})
+        ({uid, flow, tags, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, render})
         : Kernel.node => {
   uid,
+  flow,
   tags,
   nodes: List.map(toKernel, nodes),
   links: List.map(Link.lcaPathToUID, renderingLinks),

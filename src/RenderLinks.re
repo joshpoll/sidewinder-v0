@@ -1,5 +1,6 @@
 type node = {
   uid: Node.uid,
+  flow: list(Node.uid),
   nodes: list(node),
   links: list(React.element),
   transform: Node.transform,
@@ -50,8 +51,8 @@ let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.
     lr(~source, ~target);
   };
 
-let rec renderLinks = (Layout.{uid, nodes, links, transform, bbox, render} as n): node => {
+let rec renderLinks = (Layout.{uid, flow, nodes, links, transform, bbox, render} as n): node => {
   let nodes = List.map(renderLinks, nodes);
   let links = List.map(renderLink(n), links);
-  {uid, nodes, links, transform, bbox, render};
+  {uid, flow, nodes, links, transform, bbox, render};
 };

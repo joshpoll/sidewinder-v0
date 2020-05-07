@@ -1,5 +1,5 @@
 [@react.component]
-let make = (~node, ~width, ~height) => {
+let make = (~node, ~width, ~height, ~debug=false) => {
   Main.debugLCA(node);
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -13,7 +13,7 @@ let make = (~node, ~width, ~height) => {
         ++ Js.Float.toString(height /. 2.)
         ++ ")"
       }>
-      {Main.render(~debug=false, node)}
+      {Main.render(~debug, node)}
     </g>
   </svg>;
 };
