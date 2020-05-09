@@ -27,6 +27,7 @@ let make = (~tags, ~nodes, ~links) =>
     ~layout=dummyLayout,
     ~computeBBox=dummycomputeBBox,
     ~render=dummyRender,
+    (),
   );
 
 let makeAtom = tags => make(~tags, ~nodes=[], ~links=[]);

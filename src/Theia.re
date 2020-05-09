@@ -224,30 +224,36 @@ let defaultRender = (nodes, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~tags=[], ~links=[], r, sizeOffset, ()) =>
+let atom = (~uid=?, ~flow=[], ~tags=[], ~links=[], r, sizeOffset, ()) =>
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["atom", ...tags],
     ~nodes=[],
     ~links,
     ~layout=(_, _, _) => MS.empty,
     ~computeBBox=_ => sizeOffset,
     ~render=(_, _, _) => r,
+    (),
   );
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
-let nest = (~tags=[], ~nodes, ~links, ~computeBBox, ~render, ()) =>
+let nest = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~computeBBox, ~render, ()) =>
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["nest", ...tags],
     ~nodes,
     ~links,
     ~layout=(_, bboxes, _) => bboxes->MS.map(_ => Transform.ident),
     ~computeBBox,
     ~render,
+    (),
   );
 
 /* TODO: transform must include scaling! */
-let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
+let box = (~uid=?, ~flow=[], ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
@@ -263,23 +269,30 @@ let box = (~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
     </>;
   };
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["box", ...tags],
     ~nodes=[node],
     ~links,
     ~layout=(_, bboxes, _) => MS.map(bboxes, _ => Transform.ident),
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->union_list->inflate(dx, dy),
     ~render,
+    (),
   );
 };
 
-let graph = (~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
+let graph =
+    (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["graph", ...tags],
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
     ~render=(nodes, _, links) => defaultRender(nodes, links),
+    (),
   );
 
 /* https://2ality.com/2018/01/lists-arrays-reasonml.html */
@@ -305,8 +318,10 @@ let makeLinks = (linkRender, uids) => {
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
-let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
+let seq = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["seq", ...tags],
     ~nodes,
     ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
@@ -439,12 +454,14 @@ let seq = (~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
     // Js.log2("seq ns sizes", ns |> Array.of_list);
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
     ~render=(nodes, _, links) => defaultRender(nodes, links),
+    (),
   );
 
-let str = (~tags=[], s, ()) => {
+let str = (~flow=[], ~tags=[], s, ()) => {
   let width = float_of_int(String.length(s) * 10);
   let height = 12.5;
   atom(
+    ~flow,
     ~tags,
     <text
       textAnchor="middle"
@@ -495,10 +512,24 @@ let makeTableLinks = (xLinkRender, yLinkRender, uids) => {
 /* nodes is a list of rows */
 /* TODO: add more customization for row and column arrangement */
 let table =
-    (~tags=[], ~nodes, ~xLinkRender, ~yLinkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
+    (
+      ~uid=?,
+      ~flow=[],
+      ~tags=[],
+      ~nodes,
+      ~xLinkRender,
+      ~yLinkRender,
+      ~xGap,
+      ~yGap,
+      ~xDirection,
+      ~yDirection,
+      (),
+    ) => {
   let colLen = List.length(nodes);
   let rowLen = List.length(List.nth(nodes, 0));
   Main.make(
+    ~uid?,
+    ~flow,
     ~tags=["table", ...tags],
     ~nodes=List.flatten(nodes),
     ~links=
@@ -559,5 +590,6 @@ let table =
       },
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
     ~render=(nodes, _, links) => defaultRender(nodes, links),
+    (),
   );
 };
