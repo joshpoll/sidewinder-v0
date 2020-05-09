@@ -457,10 +457,11 @@ let seq = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()
     (),
   );
 
-let str = (~flow=[], ~tags=[], s, ()) => {
+let str = (~uid=?, ~flow=[], ~tags=[], s, ()) => {
   let width = float_of_int(String.length(s) * 10);
   let height = 12.5;
   atom(
+    ~uid?,
     ~flow,
     ~tags,
     <text
