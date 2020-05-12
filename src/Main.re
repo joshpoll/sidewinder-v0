@@ -2,14 +2,17 @@
 
 let counter = ref(0);
 
-Random.init(0);
+let readAndUpdateCounter = () => {
+  counter := counter^ + 1;
+  counter^ - 1;
+};
 
 /* TODO: may want to restrict inputs to local ids somehow? */
 let make =
     (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render, ~uid=?, ~flow=[], ()): Kernel.node => {
   uid:
     switch (uid) {
-    | None => string_of_int(Random.int(100000) + 100000)
+    | None => "autogen__" ++ string_of_int(readAndUpdateCounter())
     | Some(uid) => uid
     },
   flow,
