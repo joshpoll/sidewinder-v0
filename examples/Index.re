@@ -81,3 +81,14 @@ ReactDOMRe.render(
   <Visualize3 node=TableExamples.ex0 width=500. height=300. debug=true />,
   makeContainer("table0"),
 );
+
+ReactDOMRe.render(
+  <VisualizeTransition
+    node=TransitionExamples.ex0
+    nodeNext=TransitionExamples.ex1
+    width=500.
+    height=300.
+    /* debug=true */
+  />,
+  makeContainer("transition0"),
+);

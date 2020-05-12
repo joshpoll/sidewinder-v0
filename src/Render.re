@@ -7,8 +7,7 @@ let computeSVGTransform =
     ++ ", "
     ++ Js.Float.toString(bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.)
     ++ ")";
-  let scale =
-    scale ++ " " ++ "scale(" ++ Js.Float.toString(sx) ++ ", " ++ Js.Float.toString(sy) ++ ")";
+  let scale = scale ++ " " ++ {j|scale($sx, $sy)|j};
   let scale =
     scale
     ++ " "
@@ -18,10 +17,22 @@ let computeSVGTransform =
     ++ Js.Float.toString(-. (bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.))
     ++ ")";
 
-  let translate = "translate(" ++ Js.Float.toString(tx) ++ ", " ++ Js.Float.toString(ty) ++ ")";
+  let translate = {j|translate($tx, $ty)|j};
 
   scale ++ " " ++ translate;
 };
+
+let computeSVGTransformFlattened = (bbox, tx, ty, sx, sy) =>
+  computeSVGTransform({
+                        translate: {
+                          x: tx,
+                          y: ty,
+                        },
+                        scale: {
+                          x: sx,
+                          y: sy,
+                        },
+                      }, bbox);
 
 let svgTransform = (transform, bbox, r) => {
   let transform = computeSVGTransform(transform, bbox);
@@ -56,8 +67,8 @@ let rec findUID = (uid, RenderLinks.{uid: candidate, nodes} as n) =>
 
 module SpringHook =
   Spring.MakeSpring({
-    type t = (Node.transform, Node.bbox);
-    type interpolate = (Node.transform, Node.bbox) => string;
+    type t = (float, float, float, float);
+    type interpolate = (float, float, float, float) => string;
   });
 
 module G = {
@@ -139,16 +150,23 @@ let rec renderTransition =
     let (values, setValues) =
       SpringHook.use(
         ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
-        (transform, bbox),
+        (transform.translate.x, transform.translate.y, transform.scale.x, transform.scale.y),
       );
 
     /* TODO: need to trigger differently somehow */
 
     <G
-      onMouseMove={e => {setValues((next.transform, next.bbox))}}
-      transform={values->SpringHook.interpolate(computeSVGTransform)}
+      onMouseMove={e => {
+        setValues((
+          next.transform.translate.x,
+          next.transform.translate.y,
+          next.transform.scale.x,
+          next.transform.scale.y,
+        ))
+      }}
+      transform={values->SpringHook.interpolate(computeSVGTransformFlattened(bbox))}
       style={ReactDOMRe.Style.make(
-        ~transform=values->SpringHook.interpolate(computeSVGTransform),
+        ~transform=values->SpringHook.interpolate(computeSVGTransformFlattened(bbox)),
         (),
       )}>
       {nodeRender(nodes, bbox, links)}
