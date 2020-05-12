@@ -1,6 +1,6 @@
 type node = {
   uid: Node.uid,
-  flow: list(Node.uid),
+  flow: option(list(Node.uid)),
   nodes: list(node),
   links: list(React.element),
   transform: Node.transform,

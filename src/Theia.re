@@ -224,10 +224,10 @@ let defaultRender = (nodes, links) => {
 /**
  * Inputs: the element to render and the bounding box surrounding the rendered element
  */
-let atom = (~uid=?, ~flow=[], ~tags=[], ~links=[], r, sizeOffset, ()) =>
+let atom = (~uid=?, ~flow=?, ~tags=[], ~links=[], r, sizeOffset, ()) =>
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["atom", ...tags],
     ~nodes=[],
     ~links,
@@ -239,10 +239,10 @@ let atom = (~uid=?, ~flow=[], ~tags=[], ~links=[], r, sizeOffset, ()) =>
 
 /* TODO: this needs to accept a layout parameter probably. Ideally box should be able to call this.
    But if I add that as a parameter this function is the same as Sidewinder.make */
-let nest = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~computeBBox, ~render, ()) =>
+let nest = (~uid=?, ~flow=?, ~tags=[], ~nodes, ~links, ~computeBBox, ~render, ()) =>
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["nest", ...tags],
     ~nodes,
     ~links,
@@ -252,11 +252,11 @@ let nest = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~computeBBox, ~render, (
     (),
   );
 
-let noop = (~uid=?, ~flow=[], ~tags=[], node, links, ()) => {
+let noop = (~uid=?, ~flow=?, ~tags=[], node, links, ()) => {
   let render = (nodes, bbox, links) => defaultRender(nodes, links);
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["noop", ...tags],
     ~nodes=[node],
     ~links,
@@ -268,7 +268,7 @@ let noop = (~uid=?, ~flow=[], ~tags=[], node, links, ()) => {
 };
 
 /* TODO: transform must include scaling! */
-let box = (~uid=?, ~flow=[], ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
+let box = (~uid=?, ~flow=?, ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   open Rectangle;
   let render = (nodes, bbox, links) => {
     <>
@@ -285,7 +285,7 @@ let box = (~uid=?, ~flow=[], ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   };
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["box", ...tags],
     ~nodes=[node],
     ~links,
@@ -296,11 +296,10 @@ let box = (~uid=?, ~flow=[], ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   );
 };
 
-let graph =
-    (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
+let graph = (~uid=?, ~flow=?, ~tags=[], ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints, ()) =>
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["graph", ...tags],
     ~nodes,
     ~links,
@@ -333,10 +332,10 @@ let makeLinks = (linkRender, uids) => {
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
-let seq = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
+let seq = (~uid=?, ~flow=?, ~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()) =>
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["seq", ...tags],
     ~nodes,
     ~links=makeLinks(linkRender, List.map((Kernel.{uid}) => uid, nodes)),
@@ -472,12 +471,12 @@ let seq = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~linkRender, ~gap, ~direction, ()
     (),
   );
 
-let str = (~uid=?, ~flow=[], ~tags=[], s, ()) => {
+let str = (~uid=?, ~flow=?, ~tags=[], s, ()) => {
   let width = float_of_int(String.length(s) * 10);
   let height = 12.5;
   atom(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags,
     <text
       textAnchor="middle"
@@ -530,7 +529,7 @@ let makeTableLinks = (xLinkRender, yLinkRender, uids) => {
 let table =
     (
       ~uid=?,
-      ~flow=[],
+      ~flow=?,
       ~tags=[],
       ~nodes,
       ~xLinkRender,
@@ -545,7 +544,7 @@ let table =
   let rowLen = List.length(List.nth(nodes, 0));
   Main.make(
     ~uid?,
-    ~flow,
+    ~flow?,
     ~tags=["table", ...tags],
     ~nodes=List.flatten(nodes),
     ~links=

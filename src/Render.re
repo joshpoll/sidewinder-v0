@@ -138,38 +138,43 @@ let rec renderTransition =
         (nextNode, RenderLinks.{nodes, flow, links, transform, bbox, render: nodeRender}) => {
   let nodes = List.map(renderTransition(nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
-  let first_flow = flow->List.nth_opt(0);
-  switch (first_flow) {
-  /* no flow. render normally */
+  switch (flow) {
+  /* render normally */
   | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
-  | Some(first_flow) =>
-    let next = findUID(first_flow, nextNode) |> Belt.Option.getExn;
-    /* 2. apply svgTransformTransition from this node to new node */
-    /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
+  | Some(flow) =>
+    let first_flow = flow->List.nth_opt(0);
+    switch (first_flow) {
+    /* node gets deleted. just render normally for now. */
+    | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
+    | Some(first_flow) =>
+      let next = findUID(first_flow, nextNode) |> Belt.Option.getExn;
+      /* 2. apply svgTransformTransition from this node to new node */
+      /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
 
-    let (values, setValues) =
-      SpringHook.use(
-        ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
-        (transform.translate.x, transform.translate.y, transform.scale.x, transform.scale.y),
-      );
+      let (values, setValues) =
+        SpringHook.use(
+          ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
+          (transform.translate.x, transform.translate.y, transform.scale.x, transform.scale.y),
+        );
 
-    /* TODO: need to trigger differently somehow */
+      /* TODO: need to trigger differently somehow */
 
-    <G
-      onMouseMove={e => {
-        setValues((
-          next.transform.translate.x,
-          next.transform.translate.y,
-          next.transform.scale.x,
-          next.transform.scale.y,
-        ))
-      }}
-      transform={values->SpringHook.interpolate(computeSVGTransformFlattened(bbox))}
-      style={ReactDOMRe.Style.make(
-        ~transform=values->SpringHook.interpolate(computeSVGTransformFlattened(bbox)),
-        (),
-      )}>
-      {nodeRender(nodes, bbox, links)}
-    </G>;
+      <G
+        onMouseMove={e => {
+          setValues((
+            next.transform.translate.x,
+            next.transform.translate.y,
+            next.transform.scale.x,
+            next.transform.scale.y,
+          ))
+        }}
+        transform={values->SpringHook.interpolate(computeSVGTransformFlattened(bbox))}
+        style={ReactDOMRe.Style.make(
+          ~transform=values->SpringHook.interpolate(computeSVGTransformFlattened(bbox)),
+          (),
+        )}>
+        {nodeRender(nodes, bbox, links)}
+      </G>;
+    };
   };
 };
