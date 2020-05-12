@@ -129,7 +129,8 @@ let rec renderTransition =
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   let first_flow = flow->List.nth_opt(0);
   switch (first_flow) {
-  | None => failwith("TODO")
+  /* no flow. render normally */
+  | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
   | Some(first_flow) =>
     let next = findUID(first_flow, nextNode) |> Belt.Option.getExn;
     /* 2. apply svgTransformTransition from this node to new node */
