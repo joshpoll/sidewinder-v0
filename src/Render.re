@@ -127,25 +127,30 @@ let rec renderTransition =
         (nextNode, RenderLinks.{nodes, flow, links, transform, bbox, render: nodeRender}) => {
   let nodes = List.map(renderTransition(nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
-  let next = findUID(flow |> List.hd, nextNode) |> Belt.Option.getExn;
-  /* 2. apply svgTransformTransition from this node to new node */
-  /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
+  let first_flow = flow->List.nth_opt(0);
+  switch (first_flow) {
+  | None => failwith("TODO")
+  | Some(first_flow) =>
+    let next = findUID(first_flow, nextNode) |> Belt.Option.getExn;
+    /* 2. apply svgTransformTransition from this node to new node */
+    /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
 
-  let (values, setValues) =
-    SpringHook.use(
-      ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
-      (transform, bbox),
-    );
+    let (values, setValues) =
+      SpringHook.use(
+        ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
+        (transform, bbox),
+      );
 
-  /* TODO: need to trigger differently somehow */
+    /* TODO: need to trigger differently somehow */
 
-  <G
-    onMouseMove={e => {setValues((next.transform, next.bbox))}}
-    transform={values->SpringHook.interpolate(computeSVGTransform)}
-    style={ReactDOMRe.Style.make(
-      ~transform=values->SpringHook.interpolate(computeSVGTransform),
-      (),
-    )}>
-    {nodeRender(nodes, bbox, links)}
-  </G>;
+    <G
+      onMouseMove={e => {setValues((next.transform, next.bbox))}}
+      transform={values->SpringHook.interpolate(computeSVGTransform)}
+      style={ReactDOMRe.Style.make(
+        ~transform=values->SpringHook.interpolate(computeSVGTransform),
+        (),
+      )}>
+      {nodeRender(nodes, bbox, links)}
+    </G>;
+  };
 };
