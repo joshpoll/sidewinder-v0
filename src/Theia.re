@@ -252,6 +252,21 @@ let nest = (~uid=?, ~flow=[], ~tags=[], ~nodes, ~links, ~computeBBox, ~render, (
     (),
   );
 
+let noop = (~uid=?, ~flow=[], ~tags=[], node, links, ()) => {
+  let render = (nodes, bbox, links) => defaultRender(nodes, links);
+  Main.make(
+    ~uid?,
+    ~flow,
+    ~tags=["noop", ...tags],
+    ~nodes=[node],
+    ~links,
+    ~layout=(_, bboxes, _) => MS.map(bboxes, _ => Transform.ident),
+    ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
+    ~render,
+    (),
+  );
+};
+
 /* TODO: transform must include scaling! */
 let box = (~uid=?, ~flow=[], ~tags=[], ~dx=0., ~dy=0., node, links, ()) => {
   open Rectangle;
