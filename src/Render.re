@@ -68,16 +68,19 @@ let rec renderTransition =
     /* node gets deleted. just render normally for now. */
     | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
     | Some(first_flow) =>
-      let next = findUID(first_flow, nextNode) |> Belt.Option.getExn;
-      /* 2. apply svgTransformTransition from this node to new node */
-      /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
+      switch (findUID(first_flow, nextNode)) {
+      | None => failwith("couldn't find flow uid: " ++ first_flow)
+      | Some(next) =>
+        /* 2. apply svgTransformTransition from this node to new node */
+        /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
 
-      <TransitionNode
-        bbox
-        renderedElem={nodeRender(nodes, bbox, links)}
-        transform
-        nextTransform={next.transform}
-      />;
+        <TransitionNode
+          bbox
+          renderedElem={nodeRender(nodes, bbox, links)}
+          transform
+          nextTransform={next.transform}
+        />
+      }
     };
   };
 };
