@@ -16,7 +16,7 @@ let rec computeGlobalTransformAux =
     globalTransform
     ->Transform.compose(transform)
     /* TODO: is this necessary? */
-    ->Transform.translate(bbox->Rectangle.x1, bbox->Rectangle.y1);
+    ->Transform.translate(-. bbox->Rectangle.x1, -. bbox->Rectangle.y1);
   let nodes = List.map(computeGlobalTransformAux(globalTransform), nodes);
   {uid, flow, nodes, links, transform, globalTransform, bbox, render};
 };
