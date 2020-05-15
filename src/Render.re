@@ -61,14 +61,14 @@ let svgTransformTransition = (transform, bbox, nextTransform, nextBBox, r) => {
   <g transform> r </g>;
 };
 
-let rec findUIDAndPath = (uid, {uid: candidate, nodes} as n) =>
+let rec findNodeByUID = (uid, {uid: candidate, nodes} as n) =>
   if (uid == candidate) {
     Some(n);
   } else {
     List.fold_left(
       (on, n) =>
         switch (on) {
-        | None => findUIDAndPath(uid, n)
+        | None => findNodeByUID(uid, n)
         | Some(n) => Some(n)
         },
       None,
@@ -76,44 +76,81 @@ let rec findUIDAndPath = (uid, {uid: candidate, nodes} as n) =>
     );
   };
 
+let processSingleTransition =
+    (
+      prevState,
+      currState,
+      nextNode,
+      nodes,
+      {links, transform, globalTransform, bbox, render: nodeRender},
+      uid,
+    ) => {
+  switch (findNodeByUID(uid, nextNode)) {
+  | None => failwith("couldn't find flow uid: " ++ uid)
+  | Some(next) =>
+    let transformDelta =
+      Transform.compose(next.globalTransform, Transform.invert(globalTransform));
+    /* Js.log2("next.transform", next.transform);
+       Js.log2("transformDelta", transformDelta);
+       Js.log2("transform", transform);
+       Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
+    <TransitionNode
+      bbox
+      renderedElem={nodeRender(nodes, bbox, links)}
+      transform
+      nextTransform={Transform.compose(transform, transformDelta)}
+      prevState
+      currState
+    />;
+  };
+};
+
 let rec renderTransition =
         (
           ~prevState: TransitionNode.state,
           ~currState: TransitionNode.state,
           nextNode: node,
-          {nodes, flow, links, transform, globalTransform, bbox, render: nodeRender},
+          {nodes, flow, links, transform, globalTransform, bbox, render: nodeRender} as n,
         ) => {
   let nodes = List.map(renderTransition(~prevState, ~currState, nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
   /* render normally */
   | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
+  /* node gets deleted */
+  | Some([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
   | Some(flow) =>
-    let first_flow = flow->List.nth_opt(0);
-    switch (first_flow) {
-    /* node gets deleted. */
-    | None => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
-    | Some(first_flow) =>
-      switch (findUIDAndPath(first_flow, nextNode)) {
-      | None => failwith("couldn't find flow uid: " ++ first_flow)
-      | Some(next) =>
-        /* 2. apply svgTransformTransition from this node to new node */
-        /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
-        let transformDelta =
-          Transform.compose(next.globalTransform, Transform.invert(globalTransform));
-        /* Js.log2("next.transform", next.transform);
-           Js.log2("transformDelta", transformDelta);
-           Js.log2("transform", transform);
-           Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
-        <TransitionNode
-          bbox
-          renderedElem={nodeRender(nodes, bbox, links)}
-          transform
-          nextTransform={Transform.compose(transform, transformDelta)}
-          prevState
-          currState
-        />;
-      }
-    };
+    <g>
+      {List.map(processSingleTransition(prevState, currState, nextNode, nodes, n), flow)
+       |> Array.of_list
+       |> React.array}
+    </g>
+  /* | Some(flow) =>
+     let first_flow = flow->List.nth_opt(0);
+     switch (first_flow) {
+     /* node gets deleted. */
+     | None => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
+     | Some(first_flow) =>
+       switch (findNodeByUID(first_flow, nextNode)) {
+       | None => failwith("couldn't find flow uid: " ++ first_flow)
+       | Some(next) =>
+         /* 2. apply svgTransformTransition from this node to new node */
+         /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
+         let transformDelta =
+           Transform.compose(next.globalTransform, Transform.invert(globalTransform));
+         /* Js.log2("next.transform", next.transform);
+            Js.log2("transformDelta", transformDelta);
+            Js.log2("transform", transform);
+            Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
+         <TransitionNode
+           bbox
+           renderedElem={nodeRender(nodes, bbox, links)}
+           transform
+           nextTransform={Transform.compose(transform, transformDelta)}
+           prevState
+           currState
+         />;
+       }
+     }; */
   };
 };
