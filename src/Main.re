@@ -51,7 +51,20 @@ let renderLinks = (~debug=false, n: Kernel.node) =>
   |> Layout.computeBBoxes
   |> RenderLinks.renderLinks;
 
-let renderTransition = (~debug=false, n1: Kernel.node, n2: Kernel.node): React.element =>
-  Render.renderTransition(renderLinks(~debug, n2), renderLinks(~debug, n1));
+let renderTransition =
+    (
+      ~debug=false,
+      ~prevState: TransitionNode.state,
+      ~currState: TransitionNode.state,
+      n1: Kernel.node,
+      n2: Kernel.node,
+    )
+    : React.element =>
+  Render.renderTransition(
+    ~prevState,
+    ~currState,
+    renderLinks(~debug, n2),
+    renderLinks(~debug, n1),
+  );
 
 let debugLCA = (n: Kernel.node) => n |> LCA.fromKernel |> Js.log2("debug lca");

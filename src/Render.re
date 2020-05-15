@@ -56,8 +56,13 @@ let rec findUID = (uid, RenderLinks.{uid: candidate, nodes} as n) =>
   };
 
 let rec renderTransition =
-        (nextNode, RenderLinks.{nodes, flow, links, transform, bbox, render: nodeRender}) => {
-  let nodes = List.map(renderTransition(nextNode), nodes);
+        (
+          ~prevState: TransitionNode.state,
+          ~currState: TransitionNode.state,
+          nextNode,
+          RenderLinks.{nodes, flow, links, transform, bbox, render: nodeRender},
+        ) => {
+  let nodes = List.map(renderTransition(~prevState, ~currState, nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
   /* render normally */
@@ -79,6 +84,8 @@ let rec renderTransition =
           renderedElem={nodeRender(nodes, bbox, links)}
           transform
           nextTransform={next.transform}
+          prevState
+          currState
         />
       }
     };

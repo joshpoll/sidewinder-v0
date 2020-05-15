@@ -103,6 +103,10 @@ let computeSVGTransformFlattened = (bbox, tx, ty, sx, sy) =>
                         },
                       }, bbox);
 
+type state =
+  | Before
+  | After;
+
 [@react.component]
 let make =
     (
@@ -110,21 +114,45 @@ let make =
       ~renderedElem: React.element,
       ~transform: Sidewinder.Node.transform,
       ~nextTransform: Sidewinder.Node.transform,
+      ~prevState: state,
+      ~currState: state,
     ) => {
-  let (values, setValues) =
-    SpringHook.use(
-      ~config=Spring.config(~mass=1., ~tension=80., ~friction=20.),
-      (transform.translate.x, transform.translate.y, transform.scale.x, transform.scale.y),
-    );
-  <G
-    onMouseMove={e => {
-      setValues((
+  let initPos =
+    switch (prevState) {
+    | Before => (
+        transform.translate.x,
+        transform.translate.y,
+        transform.scale.x,
+        transform.scale.y,
+      )
+    | After => (
         nextTransform.translate.x,
         nextTransform.translate.y,
         nextTransform.scale.x,
         nextTransform.scale.y,
-      ))
-    }}
+      )
+    };
+
+  let (values, setValues) =
+    SpringHook.use(~config=Spring.config(~mass=1., ~tension=80., ~friction=20.), initPos);
+  switch (currState) {
+  | Before =>
+    setValues((
+      transform.translate.x,
+      transform.translate.y,
+      transform.scale.x,
+      transform.scale.y,
+    ))
+  | After =>
+    setValues((
+      nextTransform.translate.x,
+      nextTransform.translate.y,
+      nextTransform.scale.x,
+      nextTransform.scale.y,
+    ))
+  };
+
+  <G
     transform={values->SpringHook.interpolate(computeSVGTransformFlattened(bbox))}
     style={ReactDOMRe.Style.make(
       ~transform=values->SpringHook.interpolate(computeSVGTransformFlattened(bbox)),
