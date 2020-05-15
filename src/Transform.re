@@ -61,3 +61,29 @@ let scaleY = ({scale: {x, y}} as t, dy) => {
 };
 
 let scale = (t, dx, dy) => t->scaleX(dx)->scaleY(dy);
+
+let compose =
+    (
+      {translate: {x: tx1, y: ty1}, scale: {x: sx1, y: sy1}},
+      {translate: {x: tx2, y: ty2}, scale: {x: sx2, y: sy2}},
+    ) => {
+  translate: {
+    x: tx1 +. tx2,
+    y: ty1 +. ty2,
+  },
+  scale: {
+    x: sx1 *. sx2,
+    y: sy1 *. sy2,
+  },
+};
+
+let invert = ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}) => {
+  translate: {
+    x: -. tx,
+    y: -. ty,
+  },
+  scale: {
+    x: 1. /. sx,
+    y: 1. /. sy,
+  },
+};

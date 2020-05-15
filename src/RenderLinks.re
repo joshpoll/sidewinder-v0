@@ -34,6 +34,8 @@ let rec computeLCAFrameBBoxAux =
 
 let computeLCAFrameBBox = computeLCAFrameBBoxAux(Transform.init);
 
+/* TODO: adapt for use with transitions. animation transformations must be localized versions of the
+   global diffs */
 let rec computeTransform = (node: Layout.node, path) =>
   switch (path) {
   | [] => node.bbox

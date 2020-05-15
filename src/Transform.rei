@@ -29,3 +29,7 @@ let scaleX: (t, float) => t;
 let scaleY: (t, float) => t;
 
 let scale: (t, float, float) => t;
+
+let compose: (t, t) => t;
+
+let invert: t => t;

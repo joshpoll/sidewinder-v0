@@ -63,8 +63,8 @@ let renderTransition =
   Render.renderTransition(
     ~prevState,
     ~currState,
-    renderLinks(~debug, n2),
-    renderLinks(~debug, n1),
+    renderLinks(~debug, n2) |> Render.computeGlobalTransform,
+    renderLinks(~debug, n1) |> Render.computeGlobalTransform,
   );
 
 let debugLCA = (n: Kernel.node) => n |> LCA.fromKernel |> Js.log2("debug lca");
