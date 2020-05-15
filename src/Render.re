@@ -13,8 +13,6 @@ type node = {
 let rec computeGlobalTransformAux =
         (globalTransform, RenderLinks.{uid, flow, nodes, links, transform, bbox, render}) => {
   let globalTransform = globalTransform->Transform.compose(transform);
-  /* TODO: is this necessary? */
-  /* ->Transform.translate(-. bbox->Rectangle.x1, -. bbox->Rectangle.y1); */
   let nodes = List.map(computeGlobalTransformAux(globalTransform), nodes);
   {uid, flow, nodes, links, transform, globalTransform, bbox, render};
 };
@@ -93,8 +91,8 @@ let rec renderTransition =
   | Some(flow) =>
     let first_flow = flow->List.nth_opt(0);
     switch (first_flow) {
-    /* node gets deleted. just render normally for now. */
-    | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
+    /* node gets deleted. */
+    | None => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
     | Some(first_flow) =>
       switch (findUIDAndPath(first_flow, nextNode)) {
       | None => failwith("couldn't find flow uid: " ++ first_flow)

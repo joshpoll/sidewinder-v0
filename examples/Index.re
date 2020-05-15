@@ -92,3 +92,14 @@ ReactDOMRe.render(
   />,
   makeContainer("transition0"),
 );
+
+ReactDOMRe.render(
+  <VisualizeTransition
+    node=DeleteExamples.ex0
+    nodeNext=DeleteExamples.ex1
+    width=500.
+    height=300.
+    /* debug=true */
+  />,
+  makeContainer("delete0"),
+);
