@@ -76,6 +76,12 @@ let rec findNodeByUID = (uid, {uid: candidate, nodes} as n) =>
     );
   };
 
+let findNodeByUIDExn = (uid, n) =>
+  switch (findNodeByUID(uid, n)) {
+  | None => failwith("couldn't find flow uid: " ++ uid)
+  | Some(n) => n
+  };
+
 let processSingleTransition =
     (
       prevState,
@@ -85,34 +91,76 @@ let processSingleTransition =
       {links, transform, globalTransform, bbox, render: nodeRender},
       uid,
     ) => {
-  switch (findNodeByUID(uid, nextNode)) {
-  | None => failwith("couldn't find flow uid: " ++ uid)
-  | Some(next) =>
-    let transformDelta =
-      Transform.compose(next.globalTransform, Transform.invert(globalTransform));
-    /* Js.log2("next.transform", next.transform);
-       Js.log2("transformDelta", transformDelta);
-       Js.log2("transform", transform);
-       Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
-    <TransitionNode
-      bbox
-      renderedElem={nodeRender(nodes, bbox, links)}
-      transform
-      nextTransform={Transform.compose(transform, transformDelta)}
-      prevState
-      currState
-    />;
-  };
+  let next = findNodeByUIDExn(uid, nextNode);
+  let transformDelta =
+    Transform.compose(next.globalTransform, Transform.invert(globalTransform));
+  /* Js.log2("next.transform", next.transform);
+     Js.log2("transformDelta", transformDelta);
+     Js.log2("transform", transform);
+     Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
+  <TransitionNode
+    bbox
+    renderedElem={nodeRender(nodes, bbox, links)}
+    transform
+    nextTransform={Transform.compose(transform, transformDelta)}
+    prevState
+    currState
+  />;
 };
 
-let rec renderTransition =
+let mergeFlow = (f1, f2) =>
+  switch (f1, f2) {
+  | (None, None) => None
+  | (Some(f1), None) => Some(f1)
+  | (None, Some(f2)) => Some(f2)
+  | (Some(f1), Some(f2)) => Some(f1 @ f2)
+  };
+
+let lowerSingleFlow = (uid: Node.uid, nextNode: node, nodes: list(node)): list(node) => {
+  /* find node corresponding to given uid */
+  let next = findNodeByUIDExn(uid, nextNode);
+  /* match up given nodes and next's nodes */
+  let nodePairs = List.combine(nodes, next.nodes);
+  /* add next's nodes as a targets for given nodes */
+  List.map(((n, next)) => {...n, flow: mergeFlow(Some([next.uid]), n.flow)}, nodePairs);
+};
+
+/* lowerFlow lowers the IDs in the given flow down to the next level of nodes */
+let rec lowerFlow = (nextNode: node, node: node): node => {
+  /* propagate our current flow down to children */
+  let nodes =
+    switch (node.flow) {
+    | None => node.nodes
+    | Some(flow) =>
+      List.fold_left((ns, uid) => lowerSingleFlow(uid, nextNode, ns), node.nodes, flow)
+    };
+  /* visit children */
+  {...node, nodes: List.map(lowerFlow(nextNode), nodes)};
+};
+
+/* /* TODO: write a new function that propagates flow downwards through children. This ensures that
+      movement in children relative to parent will be captured e.g. state 2 in `id id`. */
+   let rec propagateFlow = (accFlow, nextNode: node, {nodes, flow, links} as n) => {
+     let flow = mergeFlow(accFlow, flow);
+     let loweredFlows = lowerFlow(nextNode, n);
+     switch (flow) {
+     /* no flow at this node, visit children */
+     | None => {...n, nodes: List.map(propagateFlow(flow, nextNode), nodes)}
+     /* flow is deleting, children will be deleted, too so don't need to propagate */
+     | Some([]) => n
+     /* accumulate flow */
+     | Some(_) => {...n, flow, nodes: List.map(propagateFlow(flow, nextNode), nodes)}
+     };
+   }; */
+
+let rec renderTransitionAux =
         (
           ~prevState: TransitionNode.state,
           ~currState: TransitionNode.state,
           nextNode: node,
-          {nodes, flow, links, transform, globalTransform, bbox, render: nodeRender} as n,
+          {nodes, flow, links, transform, bbox, render: nodeRender} as n: node,
         ) => {
-  let nodes = List.map(renderTransition(~prevState, ~currState, nextNode), nodes);
+  let nodes = List.map(renderTransitionAux(~prevState, ~currState, nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
   /* render normally */
@@ -125,32 +173,22 @@ let rec renderTransition =
        |> Array.of_list
        |> React.array}
     </g>
-  /* | Some(flow) =>
-     let first_flow = flow->List.nth_opt(0);
-     switch (first_flow) {
-     /* node gets deleted. */
-     | None => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
-     | Some(first_flow) =>
-       switch (findNodeByUID(first_flow, nextNode)) {
-       | None => failwith("couldn't find flow uid: " ++ first_flow)
-       | Some(next) =>
-         /* 2. apply svgTransformTransition from this node to new node */
-         /* nodeRender(nodes, bbox, links) |> svgTransformTransition(transform, bbox, (), ()); */
-         let transformDelta =
-           Transform.compose(next.globalTransform, Transform.invert(globalTransform));
-         /* Js.log2("next.transform", next.transform);
-            Js.log2("transformDelta", transformDelta);
-            Js.log2("transform", transform);
-            Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
-         <TransitionNode
-           bbox
-           renderedElem={nodeRender(nodes, bbox, links)}
-           transform
-           nextTransform={Transform.compose(transform, transformDelta)}
-           prevState
-           currState
-         />;
-       }
-     }; */
   };
+};
+
+let renderTransition =
+    (
+      ~lowerFlow as lf: bool,
+      ~prevState: TransitionNode.state,
+      ~currState: TransitionNode.state,
+      nextNode: node,
+      n: node,
+    ) => {
+  let n =
+    if (lf) {
+      lowerFlow(nextNode, n);
+    } else {
+      n;
+    };
+  renderTransitionAux(~prevState, ~currState, nextNode, n);
 };

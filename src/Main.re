@@ -54,6 +54,7 @@ let renderLinks = (~debug=false, n: Kernel.node) =>
 let renderTransition =
     (
       ~debug=false,
+      ~lowerFlow=false,
       ~prevState: TransitionNode.state,
       ~currState: TransitionNode.state,
       n1: Kernel.node,
@@ -61,6 +62,7 @@ let renderTransition =
     )
     : React.element =>
   Render.renderTransition(
+    ~lowerFlow,
     ~prevState,
     ~currState,
     renderLinks(~debug, n2) |> Render.computeGlobalTransform,

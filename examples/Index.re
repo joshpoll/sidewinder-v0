@@ -88,6 +88,7 @@ ReactDOMRe.render(
     nodeNext=TransitionExamples.ex1
     width=500.
     height=300.
+    lowerFlow=true
     /* debug=true */
   />,
   makeContainer("transition0"),
@@ -99,6 +100,7 @@ ReactDOMRe.render(
     nodeNext=DeleteExamples.ex1
     width=500.
     height=300.
+    lowerFlow=true
     /* debug=true */
   />,
   makeContainer("delete0"),
@@ -110,6 +112,7 @@ ReactDOMRe.render(
     nodeNext=TransitionExamples.ex3
     width=500.
     height=300.
+    lowerFlow=true
     /* debug=true */
   />,
   makeContainer("transition1"),
