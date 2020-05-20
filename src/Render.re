@@ -120,6 +120,7 @@ let lowerSingleFlow = (uid: Node.uid, nextNode: node, nodes: list(node)): list(n
   /* find node corresponding to given uid */
   let next = findNodeByUIDExn(uid, nextNode);
   /* match up given nodes and next's nodes */
+  Js.log3("attempting to match nodes:", nodes |> Array.of_list, next.nodes |> Array.of_list);
   let nodePairs = List.combine(nodes, next.nodes);
   /* add next's nodes as a targets for given nodes */
   List.map(((n, next)) => {...n, flow: mergeFlow(Some([next.uid]), n.flow)}, nodePairs);
