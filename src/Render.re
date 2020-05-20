@@ -130,6 +130,7 @@ let lowerSingleFlow = (uid: Node.uid, nextNode: node, nodes: list(node)): list(n
 
 /* lowerFlow lowers the IDs in the given flow down to the next level of nodes */
 let rec lowerFlow = (nextNode: node, node: node): node => {
+  Js.log2("lowerFlow on node:", node);
   /* propagate our current flow down to children */
   let nodes =
     switch (node.flow) {
