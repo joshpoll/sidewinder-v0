@@ -116,12 +116,13 @@ let mergeFlow = (f1, f2) =>
   | (Some(f1), Some(f2)) => Some(f1 @ f2)
   };
 
-let lowerSingleFlow = (uid: Node.uid, nextNode: node, nodes: list(node)): list(node) => {
+let lowerSingleFlow = (node: node, uid: Node.uid, nextNode: node, nodes: list(node)): list(node) => {
   /* find node corresponding to given uid */
   let next = findNodeByUIDExn(uid, nextNode);
   /* match up given nodes and next's nodes */
+  Js.log2("attempting to match nodes against node:", node);
   Js.log2("attempting to match nodes against nextNode:", nextNode);
-  Js.log2("attempting to match nodes against next:", nextNode);
+  Js.log2("attempting to match nodes against next:", next);
   Js.log3("attempting to match nodes:", nodes |> Array.of_list, next.nodes |> Array.of_list);
   let nodePairs = List.combine(nodes, next.nodes);
   /* add next's nodes as a targets for given nodes */
@@ -136,7 +137,7 @@ let rec lowerFlow = (nextNode: node, node: node): node => {
     switch (node.flow) {
     | None => node.nodes
     | Some(flow) =>
-      List.fold_left((ns, uid) => lowerSingleFlow(uid, nextNode, ns), node.nodes, flow)
+      List.fold_left((ns, uid) => lowerSingleFlow(node, uid, nextNode, ns), node.nodes, flow)
     };
   /* visit children */
   {...node, nodes: List.map(lowerFlow(nextNode), nodes)};
