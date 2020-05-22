@@ -2,7 +2,7 @@ open Theia;
 
 let ex0 =
   seq(
-    ~nodes=[str(~uid="0", ~flow=Flow([]), "x", ()), str("y", ())],
+    ~nodes=[str(~uid="0", ~flow=Some([]), "x", ()), str("y", ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,

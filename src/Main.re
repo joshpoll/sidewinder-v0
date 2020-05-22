@@ -9,8 +9,7 @@ let readAndUpdateCounter = () => {
 
 /* TODO: may want to restrict inputs to local ids somehow? */
 let make =
-    (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render, ~uid=?, ~flow=Flow.Untracked, ())
-    : Kernel.node => {
+    (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render, ~uid=?, ~flow=None, ()): Kernel.node => {
   uid:
     switch (uid) {
     | None => "autogen__" ++ string_of_int(readAndUpdateCounter())

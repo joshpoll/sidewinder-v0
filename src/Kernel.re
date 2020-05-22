@@ -91,7 +91,7 @@ type node = {
   /* search for uids in the next state that aren't present in any of prev state's flows to find new
      nodes */
   /* None = no annotation */
-  flow: Flow.t,
+  flow: Ribbon.t,
   tags: list(tag) /* TODO: this is an experiment for writing some transformations. they are   currently erased during LCA. might want to propagate them so rendering can use tags. not sure */,
   nodes: list(node),
   links: list(Link.uid),

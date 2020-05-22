@@ -1,6 +1,6 @@
 type node = {
   uid: Node.uid,
-  flow: Flow.t,
+  flow: Ribbon.t,
   nodes: list(node),
   links: list(React.element),
   transform: Node.transform,
@@ -89,45 +89,53 @@ let processSingleTransition =
       nextNode,
       nodes,
       {links, transform, globalTransform, bbox, render: nodeRender},
-      uid,
+      flow: Ribbon.flow,
     ) => {
-  let next = findNodeByUIDExn(uid, nextNode);
-  let transformDelta =
-    Transform.compose(next.globalTransform, Transform.invert(globalTransform));
-  /* Js.log2("next.transform", next.transform);
-     Js.log2("transformDelta", transformDelta);
-     Js.log2("transform", transform);
-     Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
-  <TransitionNode
-    bbox
-    renderedElem={nodeRender(nodes, bbox, links)}
-    transform
-    nextTransform={Transform.compose(transform, transformDelta)}
-    prevState
-    currState
-  />;
+  switch (flow) {
+  | Relation => failwith("TODO: Relation transitions not yet supported!")
+  | Pattern(uid)
+  | External(uid) =>
+    let next = findNodeByUIDExn(uid, nextNode);
+    let transformDelta =
+      Transform.compose(next.globalTransform, Transform.invert(globalTransform));
+    /* Js.log2("next.transform", next.transform);
+       Js.log2("transformDelta", transformDelta);
+       Js.log2("transform", transform);
+       Js.log2("nextTransform", Transform.compose(transform, transformDelta)); */
+    <TransitionNode
+      bbox
+      renderedElem={nodeRender(nodes, bbox, links)}
+      transform
+      nextTransform={Transform.compose(transform, transformDelta)}
+      prevState
+      currState
+    />;
+  };
 };
 
-let lowerSingleFlow = (node: node, uid: Node.uid, nextNode: node, nodes: list(node)): list(node) => {
-  /* find node corresponding to given uid */
-  let next = findNodeByUIDExn(uid, nextNode);
-  /* match up given nodes and next's nodes */
-  Js.log2("attempting to match nodes against nextNode:", nextNode);
-  Js.log2("attempting to match nodes against next:", next);
-  Js.log2("attempting to match nodes against node:", node);
-  Js.log3("attempting to match nodes:", nodes |> Array.of_list, next.nodes |> Array.of_list);
-  let nodePairs = List.combine(nodes, next.nodes);
-  /* add next's nodes as a targets for given nodes */
-  let computeFlow = (n, next) =>
-    switch (n.flow) {
-    | Inherit => Flow.Flow([next.uid])
-    | flow => flow
-    };
-  List.map(
-    ((n, next)) =>
-      {...n, flow: /* Flow.merge(Flow([next.uid]), n.flow) */ computeFlow(n, next)},
-    nodePairs,
-  );
+let lowerSingleFlow =
+    (node: node, flow: Ribbon.flow, nextNode: node, nodes: list(node)): list(node) => {
+  switch (flow) {
+  /* External flows don't propagate because we can't guarantee the src and dst node have the same structure */
+  | External(_) => nodes
+  /* Relation flows don't propagate because they correspond only to parent-level animations for now. */
+  | Relation => nodes
+  | Pattern(uid) =>
+    /* find node corresponding to given uid */
+    let next = findNodeByUIDExn(uid, nextNode);
+    /* match up given nodes and next's nodes */
+    Js.log2("attempting to match nodes against nextNode:", nextNode);
+    Js.log2("attempting to match nodes against next:", next);
+    Js.log2("attempting to match nodes against node:", node);
+    Js.log3("attempting to match nodes:", nodes |> Array.of_list, next.nodes |> Array.of_list);
+    let nodePairs = List.combine(nodes, next.nodes);
+    /* add next's nodes as a targets for given nodes */
+
+    List.map(
+      ((n, next)) => {...n, flow: Ribbon.merge(Some([Pattern(next.uid)]), n.flow)},
+      nodePairs,
+    );
+  };
 };
 
 /* lowerFlow lowers the IDs in the given flow down to the next level of nodes */
@@ -136,13 +144,9 @@ let rec lowerFlow = (nextNode: node, node: node): node => {
   /* propagate our current flow down to children */
   let nodes =
     switch (node.flow) {
-    | Inherit =>
-      failwith(
-        "lowerFlow encountered an Inherit flow. Inherit flows should be normal flows by now.",
-      )
-    | Untracked => node.nodes
-    | Flow(flow) =>
-      List.fold_left((ns, uid) => lowerSingleFlow(node, uid, nextNode, ns), node.nodes, flow)
+    | None => node.nodes
+    | Some(ribbon) =>
+      List.fold_left((ns, uid) => lowerSingleFlow(node, uid, nextNode, ns), node.nodes, ribbon)
     };
   /* visit children */
   {...node, nodes: List.map(lowerFlow(nextNode), nodes)};
@@ -174,11 +178,10 @@ let rec renderTransitionAux =
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
   /* render normally */
-  | Untracked
-  | Inherit => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
+  | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
   /* node gets deleted */
-  | Flow([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
-  | Flow(flow) =>
+  | Some([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
+  | Some(flow) =>
     <g>
       {List.map(processSingleTransition(prevState, currState, nextNode, nodes, n), flow)
        |> Array.of_list

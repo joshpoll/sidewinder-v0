@@ -71,7 +71,7 @@ let debugBBox = (~dx, ~dy, node) => {
   };
   Kernel.{
     uid: Random.int(1000000) + 1000 |> string_of_int,
-    flow: Untracked /* TODO */,
+    flow: None /* TODO */,
     tags: ["debug"],
     nodes: [node],
     links: [],

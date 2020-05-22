@@ -2,7 +2,7 @@ open Theia;
 
 let ex0 =
   seq(
-    ~nodes=[str(~uid="0", ~flow=Flow(["0"]), "x", ()), str("y", ())],
+    ~nodes=[str(~uid="0", ~flow=Some([Pattern("0")]), "x", ()), str("y", ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
@@ -11,7 +11,7 @@ let ex0 =
 
 let ex1 =
   seq(
-    ~nodes=[str("y", ()), str(~uid="0", ~flow=Flow(["0"]), "x", ())],
+    ~nodes=[str("y", ()), str(~uid="0", ~flow=Some([Pattern("0")]), "x", ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
@@ -21,7 +21,10 @@ let ex1 =
 /* multiple copies */
 let ex2 =
   seq(
-    ~nodes=[str(~uid="0", ~flow=Flow(["0", "1", "2"]), "x", ()), str("y", ())],
+    ~nodes=[
+      str(~uid="0", ~flow=Some([Pattern("0"), Pattern("1"), Pattern("2")]), "x", ()),
+      str("y", ()),
+    ],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
