@@ -167,13 +167,6 @@ let rec lowerFlow = (nextNode: node, node: node): node => {
      };
    }; */
 
-let rec shouldFadeOut = ({nodes, flow}: node) => {
-  switch (flow) {
-  | None => List.for_all(shouldFadeOut, nodes)
-  | Some(_) => false
-  };
-};
-
 let rec renderTransitionAux =
         (
           ~prevState: TransitionNode.state,
@@ -184,13 +177,8 @@ let rec renderTransitionAux =
   let nodes = List.map(renderTransitionAux(~prevState, ~currState, nextNode), nodes);
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
-  /* fade out node if all its children are fading out, too */
-  | None =>
-    if (shouldFadeOut(n)) {
-      <FadeNode fadeDir=Out renderedElem={nodeRender(nodes, bbox, links)} prevState currState />;
-    } else {
-      nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox);
-    }
+  /* render normally */
+  | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
   /* node gets deleted */
   | Some([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
   | Some(flow) =>
