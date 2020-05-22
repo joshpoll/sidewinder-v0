@@ -16,7 +16,7 @@ module MS = Belt.Map.String;
 
 type node = {
   uid: Node.uid,
-  flow: Ribbon.t,
+  flow: Flow.t,
   tags: list(Kernel.tag),
   nodes: list(node),
   renderingLinks: list(Link.lcaPath),

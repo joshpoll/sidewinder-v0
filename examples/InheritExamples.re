@@ -1,18 +1,19 @@
 open Theia;
+open Flow;
 
-let hSeq = (~uid=?, ~flow=None, ~gap=0., nodes) =>
+let hSeq = (~uid=?, ~flow=Untracked, ~gap=0., nodes) =>
   seq(~uid?, ~flow, ~nodes, ~linkRender=None, ~gap, ~direction=LeftRight, ());
 
-let paren = (~uid=?, ~flow=None, x) =>
-  hSeq(~uid?, ~flow, [str(~flow=None, "(", ()), x, str(~flow=None, ")", ())]);
+let paren = (~uid=?, ~flow=Untracked, x) =>
+  hSeq(~uid?, ~flow, [str(~flow=Inherit, "(", ()), x, str(~flow=Inherit, ")", ())]);
 
 let ex0 =
   seq(
     ~nodes=[
       paren(
         ~uid="foo",
-        ~flow=Some([Pattern("foo")]),
-        str(~uid="0", ~flow=Some([Pattern("0"), Pattern("1"), Pattern("2")]), "x", ()),
+        ~flow=Flow(["foo"]),
+        str(~uid="0", ~flow=Flow(["0", "1", "2"]), "x", ()),
       ),
       str("y", ()),
     ],
