@@ -1,6 +1,6 @@
 type node = {
   uid: Node.uid,
-  flow: option(list(Node.uid)),
+  flow: Flow.t,
   nodes: list(node),
   links: list(Link.lcaPath),
   transform: Node.transform,

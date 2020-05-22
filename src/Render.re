@@ -1,6 +1,6 @@
 type node = {
   uid: Node.uid,
-  flow: option(list(Node.uid)),
+  flow: Flow.t,
   nodes: list(node),
   links: list(React.element),
   transform: Node.transform,
@@ -108,14 +108,6 @@ let processSingleTransition =
   />;
 };
 
-let mergeFlow = (f1, f2) =>
-  switch (f1, f2) {
-  | (None, None) => None
-  | (Some(f1), None) => Some(f1)
-  | (None, Some(f2)) => Some(f2)
-  | (Some(f1), Some(f2)) => Some(f1 @ f2)
-  };
-
 let lowerSingleFlow = (node: node, uid: Node.uid, nextNode: node, nodes: list(node)): list(node) => {
   /* find node corresponding to given uid */
   let next = findNodeByUIDExn(uid, nextNode);
@@ -126,7 +118,16 @@ let lowerSingleFlow = (node: node, uid: Node.uid, nextNode: node, nodes: list(no
   Js.log3("attempting to match nodes:", nodes |> Array.of_list, next.nodes |> Array.of_list);
   let nodePairs = List.combine(nodes, next.nodes);
   /* add next's nodes as a targets for given nodes */
-  List.map(((n, next)) => {...n, flow: mergeFlow(Some([next.uid]), n.flow)}, nodePairs);
+  let computeFlow = (n, next) =>
+    switch (n.flow) {
+    | Inherit => Flow.Flow([next.uid])
+    | flow => flow
+    };
+  List.map(
+    ((n, next)) =>
+      {...n, flow: /* Flow.merge(Flow([next.uid]), n.flow) */ computeFlow(n, next)},
+    nodePairs,
+  );
 };
 
 /* lowerFlow lowers the IDs in the given flow down to the next level of nodes */
@@ -135,8 +136,12 @@ let rec lowerFlow = (nextNode: node, node: node): node => {
   /* propagate our current flow down to children */
   let nodes =
     switch (node.flow) {
-    | None => node.nodes
-    | Some(flow) =>
+    | Inherit =>
+      failwith(
+        "lowerFlow encountered an Inherit flow. Inherit flows should be normal flows by now.",
+      )
+    | Untracked => node.nodes
+    | Flow(flow) =>
       List.fold_left((ns, uid) => lowerSingleFlow(node, uid, nextNode, ns), node.nodes, flow)
     };
   /* visit children */
@@ -169,10 +174,11 @@ let rec renderTransitionAux =
   /* 1. look for a node in nextNode matching flow. (just first flow value for now) */
   switch (flow) {
   /* render normally */
-  | None => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
+  | Untracked
+  | Inherit => nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox)
   /* node gets deleted */
-  | Some([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
-  | Some(flow) =>
+  | Flow([]) => <DeleteNode renderedElem={nodeRender(nodes, bbox, links)} prevState currState />
+  | Flow(flow) =>
     <g>
       {List.map(processSingleTransition(prevState, currState, nextNode, nodes, n), flow)
        |> Array.of_list

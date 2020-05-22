@@ -117,3 +117,15 @@ ReactDOMRe.render(
   />,
   makeContainer("transition1"),
 );
+
+ReactDOMRe.render(
+  <VisualizeTransition
+    node=InheritExamples.ex0
+    nodeNext=InheritExamples.ex1
+    width=500.
+    height=300.
+    lowerFlow=true
+    /* debug=true */
+  />,
+  makeContainer("inherit0"),
+);
