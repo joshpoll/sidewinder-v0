@@ -17,3 +17,16 @@ module MS = Belt.Map.String;
      }; */
 
 type t = MS.t(list(FlowTag.uid));
+
+let fromArray = MS.fromArray;
+
+let union = (m1: t, m2: t) => {
+  MS.reduce(m2, m1, (m, k, v) =>
+    m->MS.update(k, v' =>
+      switch (v') {
+      | None => Some(v)
+      | Some(v') => Some(v @ v')
+      }
+    )
+  );
+};
