@@ -12,7 +12,7 @@ let toggle = (s: TransitionNode.state): TransitionNode.state =>
   };
 
 [@react.component]
-let make = (~node, ~nodeNext, ~width, ~height, ~debug=false, ~lowerFlow=false) => {
+let make = (~node, ~flow, ~nodeNext, ~width, ~height, ~debug=false, ~lowerFlow=false) => {
   // let (state, dispatch) = React.useReducer(reducer, initialState);
   let ({prevState, currState}, setState) = React.useState(() => initialState);
 
@@ -36,7 +36,7 @@ let make = (~node, ~nodeNext, ~width, ~height, ~debug=false, ~lowerFlow=false) =
           ++ Js.Float.toString(height /. 2.)
           ++ ")"
         }>
-        {Main.renderTransition(~debug, ~lowerFlow, ~prevState, ~currState, node, nodeNext)}
+        {Main.renderTransition(~debug, ~prevState, ~currState, node, flow, nodeNext)}
       </g>
     </svg>
   </>;

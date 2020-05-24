@@ -1,22 +1,42 @@
 open Theia;
 open Flow;
 
-let hSeq = (~uid=?, ~flow=Untracked, ~gap=0., nodes) =>
-  seq(~uid?, ~flow, ~nodes, ~linkRender=None, ~gap, ~direction=LeftRight, ());
+let hSeq = (~uid=?, ~flowTag=?, ~gap=0., nodes) =>
+  seq(~uid?, ~flowTag?, ~nodes, ~linkRender=None, ~gap, ~direction=LeftRight, ());
 
-let paren = (~uid=?, ~flow=Untracked, x) =>
-  hSeq(~uid?, ~flow, [str(~flow=Inherit, "(", ()), x, str(~flow=Inherit, ")", ())]);
+let parenList = (~flowUID as uid, x) => [
+  str(~flowTag={flowNodeType: Leaf, uid, rootPath: [0]}, "(", ()),
+  x,
+  str(~flowTag={flowNodeType: Leaf, uid, rootPath: [2]}, ")", ()),
+];
+
+let paren = (~flowUID as uid, x) =>
+  seq(
+    ~flowTag={flowNodeType: Dummy, uid, rootPath: []},
+    ~nodes=[
+      str(~flowTag={flowNodeType: Leaf, uid, rootPath: [0]}, "(", ()),
+      x,
+      str(~flowTag={flowNodeType: Leaf, uid, rootPath: [2]}, ")", ()),
+    ],
+    ~linkRender=None,
+    ~gap=0.,
+    ~direction=LeftRight,
+    (),
+  );
 
 let ex0 =
   seq(
-    ~nodes=[
-      paren(
-        ~uid="foo",
-        ~flow=Flow(["foo"]),
-        str(~uid="0", ~flow=Flow(["0", "1", "2"]), "x", ()),
-      ),
-      str("y", ()),
-    ],
+    ~flowTag={flowNodeType: Dummy, uid: "foo", rootPath: []},
+    ~nodes=
+      parenList(
+        ~flowUID="foo",
+        str(
+          ~flowTag={flowNodeType: Leaf, uid: "0", rootPath: []} /* , ~flow={pat: ["0", "1", "2"], ext: []} */,
+          "x",
+          (),
+        ),
+      )
+      @ [str("y", ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,
@@ -25,12 +45,17 @@ let ex0 =
 
 let ex1 =
   seq(
-    ~nodes=[
-      str(~uid="0", "x", ()),
-      paren(~uid="foo", str("yz", ())),
-      str(~uid="1", "x", ()),
-      str(~uid="2", "x", ()),
-    ],
+    ~flowTag={flowNodeType: Dummy, uid: "foo", rootPath: []},
+    ~nodes=
+      parenList(
+        ~flowUID="foo",
+        str(
+          ~flowTag={flowNodeType: Leaf, uid: "0", rootPath: []} /* , ~flow={pat: ["0", "1", "2"], ext: []} */,
+          "xz",
+          (),
+        ),
+      )
+      @ [str("y", ())],
     ~linkRender=None,
     ~gap=0.,
     ~direction=LeftRight,

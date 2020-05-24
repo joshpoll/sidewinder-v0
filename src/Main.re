@@ -9,14 +9,14 @@ let readAndUpdateCounter = () => {
 
 /* TODO: may want to restrict inputs to local ids somehow? */
 let make =
-    (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render, ~uid=?, ~flow=Flow.Untracked, ())
-    : Kernel.node => {
+    (~tags, ~nodes, ~links, ~layout, ~computeBBox, ~render, ~uid=?, ~flowTag=?, ()): Kernel.node => {
   uid:
     switch (uid) {
     | None => "autogen__" ++ string_of_int(readAndUpdateCounter())
     | Some(uid) => uid
     },
-  flow,
+  /* flow, */
+  flowTag,
   tags,
   nodes,
   links,
@@ -59,6 +59,7 @@ let renderTransition =
       ~prevState: TransitionNode.state,
       ~currState: TransitionNode.state,
       n1: Kernel.node,
+      flow,
       n2: Kernel.node,
     )
     : React.element =>
@@ -66,6 +67,7 @@ let renderTransition =
     ~lowerFlow,
     ~prevState,
     ~currState,
+    flow,
     renderLinks(~debug, n2) |> Render.computeGlobalTransform,
     renderLinks(~debug, n1) |> Render.computeGlobalTransform,
   );

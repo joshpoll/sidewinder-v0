@@ -1,13 +1,19 @@
-type t =
-  | Flow(list(Node.uid))
-  | Inherit
-  | Untracked;
+module MS = Belt.Map.String;
 
-let merge = (f1: t, f2: t): t =>
-  switch (f1, f2) {
-  // | (Untracked, Untracked) => Untracked
-  | (Flow(f1), Flow(f2)) => Flow(f1 @ f2)
-  | (Flow(f1), Inherit) => Flow(f1)
-  | (Inherit, Flow(f2)) => Flow(f2)
-  | _ => Untracked /* TODO: this might be wrong */
-  };
+/* type flow = {
+     pat: list(Node.uid),
+     ext: list(Node.uid),
+   };
+
+   type t = option(flow);
+
+   let merge = (f1: t, f2: t): t =>
+     switch (f1, f2) {
+     | (Some({pat: pat1, ext: ext1}), Some({pat: pat2, ext: ext2})) =>
+       Some({pat: pat1 @ pat2, ext: ext1 @ ext2})
+     | (Some(f1), None) => Some(f1)
+     | (None, Some(f2)) => Some(f2)
+     | (None, None) => None
+     }; */
+
+type t = MS.t(list(FlowTag.uid));

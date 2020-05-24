@@ -82,9 +82,12 @@ ReactDOMRe.render(
   makeContainer("table0"),
 );
 
+module MS = Belt.Map.String;
+
 ReactDOMRe.render(
   <VisualizeTransition
     node=TransitionExamples.ex0
+    flow={MS.fromArray([|("0", ["0"])|])}
     nodeNext=TransitionExamples.ex1
     width=500.
     height=300.
@@ -97,6 +100,7 @@ ReactDOMRe.render(
 ReactDOMRe.render(
   <VisualizeTransition
     node=DeleteExamples.ex0
+    flow={MS.fromArray([|("0", [])|])}
     nodeNext=DeleteExamples.ex1
     width=500.
     height=300.
@@ -109,6 +113,7 @@ ReactDOMRe.render(
 ReactDOMRe.render(
   <VisualizeTransition
     node=TransitionExamples.ex2
+    flow={MS.fromArray([|("0", ["0", "1", "2"])|])}
     nodeNext=TransitionExamples.ex3
     width=500.
     height=300.
@@ -121,6 +126,7 @@ ReactDOMRe.render(
 ReactDOMRe.render(
   <VisualizeTransition
     node=InheritExamples.ex0
+    flow={MS.fromArray([|("0", ["0"]), ("foo", ["foo"])|])}
     nodeNext=InheritExamples.ex1
     width=500.
     height=300.
