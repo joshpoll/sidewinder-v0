@@ -1,3 +1,5 @@
+/* TODO: need to counter parent transformations */
+
 type node = {
   uid: Node.uid,
   // flow: Flow.t,
@@ -293,7 +295,7 @@ let rec renderFlowAux =
         /* There's no entry for this uid and thus no flow */
         | None => None
         | Some(FTUIDs(fts)) => Some(Nodes(List.map(findNodeByTagExn(_, nextNode), fts)))
-        | Some(Nodes(_)) => failwith("we didn't expect nodes in the map yet!")
+        | Some(Nodes(_)) => failwith("we didn't expect nodes in the map yet! Looked up " ++ uid)
         }
       )
     | _ => flow
