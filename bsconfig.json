@@ -28,9 +28,9 @@
   "namespace": true,
   "bs-dependencies": [
     "reason-react",
-    "bs-abstract",
     "relude",
-    "bs-react-spring"
+    "bs-react-spring",
+    "bs-bastet"
   ],
   "bs-dev-dependencies": [
     "@glennsl/bs-jest"
