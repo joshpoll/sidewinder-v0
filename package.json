@@ -25,7 +25,7 @@
   "dependencies": {
     "bs-bastet": "^1.2.5",
     "bs-react-spring": "^0.4.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "react": "^16.13.1",
     "react-cola": "0.0.6",
     "react-dom": "^16.13.1",
